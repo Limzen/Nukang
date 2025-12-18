@@ -48,13 +48,13 @@ Route::middleware(['auth'])->group(function () {
 		$pdf = PDF::loadView('invoice',compact('hargajarak','pemesananbahan','value','statuspemesanan','jarak','totalkeranjang','biayajasa'))->setPaper('a4','portrait');
 	    return $pdf->stream("invoice.pdf");
 	});
-	Route::resource('databahanmaterial', \App\Http\Controllers\DataBahanMaterialController::class);
+	Route::resource('databahanmaterial', \App\Http\Controllers$2::class);
 
-	Route::resource('datajenispemesanan', \App\Http\Controllers\DataJenisPemesananController::class);
+	Route::resource('datajenispemesanan', \App\Http\Controllers$2::class);
 
-	Route::resource('datakategoritukang', \App\Http\Controllers\DataKategoriTukangController::class);
+	Route::resource('datakategoritukang', \App\Http\Controllers$2::class);
 
-	Route::get('databahanmaterial/{id}/ubahstatus', [\App\Http\Controllers\DataBahanMaterialController::class, 'ubahstatus']);
+	Route::get('databahanmaterial/{id}/ubahstatus', [\App\Http\Controllers$3::class, 'ubahstatus']);
 
 	Route::get('ubahhargajarak', function(Request $request) {
 		$hargajarak = \App\HargaJarak::find("1");
@@ -1071,13 +1071,15 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-Route::get('/', [\App\Http\Controllers\WelcomeController::class, 'index'])->name('welcome');
+Route::get('/', [\App\Http\Controllers$3::class, 'index']);
 
-Route::get('/home', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('home', [\App\Http\Controllers$3::class, 'index']);
+
 
 Route::get('auth/registertukang', function(Request $request) {
     return view('auth/registertukang');
 });
-
-// Auth routes - handled by Laravel's auth system
-require __DIR__.'/auth.php';
+Route::controllers([
+	'auth' => 'Auth\AuthController',
+	'password' => 'Auth\PasswordController',
+]);
