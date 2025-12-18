@@ -1,100 +1,637 @@
 @extends('app')
 
+@section('title', 'Permintaan Pesanan - Nukang')
+
 @section('content')
-<div class="container" style="margin-top:20px">
-	<h2 class="tengah">Permintaan Pesanan</h2>
-	<?php if(Session::has('message_success')): ?>
-    <div class="alert alert-success" style="margin-bottom:20px;margin-top:20px">
-        <?php echo Session::get('message_success')?>
-    </div>
-    <?php endif;?>
-     <?php if(Session::has('message_failed')): ?>
-    <div class="alert alert-danger" style="margin-bottom:10px;">
-        <?php echo Session::get('message_failed')?>
-    </div>
-    <?php endif;?>
-	<div class="row">
-		<table id="exampleRiwayatTransaksi" class="table table-bordered" style="margin-top:10px;width:100%">
-	        <thead class="primarycolor">
-	            <tr>
-	              	<th style="width:30px">No</th>
-	              	<th>Nomor Pemesanan</th>
-	              	<th>Tanggal Kedatangan Penyedia Jasa Renovasi</th>
-	            </tr>
-	        </thead>
-	        <tbody>
-		        <?php $i = 1?>
-		        @foreach($pesanan as $key => $value)
-		          	<tr>
-		           	 	<td><?php echo $i;?></td>
-		            	<td><a href="{{url('riwayatpemesanan')}}/{{$value->id_pemesanan}}">{{$value->nomorpemesanan}}</a></td>
-		            	<td>{{$value->tanggalbekerja}}</td>
-		          	</tr>
-		        <?php $i++;?>
-		        @endforeach
-	        </tbody>
-	    </table>	
-	</div>
-	<div class="row" style="border-top:1px solid black;margin-top:10px">
-		<h4>Catatan: Sebelum menerima pemesanan, sebaiknya survei terlebih dahulu ke tempat pelanggan</h4>
-	</div>
-	@if(count($permintaan)!=0)
-	@foreach($permintaan as $key => $value)
-	<div class="row" style="border:1px solid black;padding:15px">
-		<div class="col-md-2">
-            <div class="boxpictureriwayatpesanan">
-                <img src="{{ asset('images/fotoprofil') }}/{{$value->fotoprofil}}" class="img-responsive" style="border:1px solid black">
-            </div>  
+<div class="request-page">
+    <div class="container">
+        {{-- Page Header --}}
+        <div class="page-header animate-fadeIn">
+            <div class="header-icon">
+                <i class="fas fa-inbox"></i>
+                @if(count($permintaan) > 0)
+                    <span class="badge">{{ count($permintaan) }}</span>
+                @endif
+            </div>
+            <div class="header-text">
+                <h1>Permintaan Pesanan</h1>
+                <p>Kelola permintaan order dari pelanggan</p>
+            </div>
         </div>
-        <div class="col-md-10" style="margin-top:-20px">
-            <h3><b>Nomor Pemesanan: </b>{{$value->nomorpemesanan}}</h3>
-            <h4 style="text-align:justify"><b>Nomor ID Pelanggan: {{$value->kodeuser}}</h4>
-            <h4 style="text-align:justify"><b>Nama: </b>{{$value->namapelanggan}}</h4>
-            <h4 style="text-align:justify"><b>Nomor HP: </b>{{$value->nomorhandphone}}</h4>
-            <h4 style="text-align:justify"><b>Kategori: </b>{{$value->kategoritukang}}</h4>
-            <h4 style="text-align:justify"><b>Jenis Pemesanan: </b>@include('include/harianorborongan')</h4>
-            <h4 style="text-align:justify"><b>Tanggal Kedatangan Penyedia Jasa Renovasi: </b>{{$value->tanggalbekerja}}</h4>
-            @if($value->kategoripemesanan != '0')
-             <h4 style="text-align:justify"><b>Tanggal Selesai: </b>{{$value->tanggalselesai}}</h4>
-            @endif
-            <h4 style="text-align:justify"><b>Alamat: </b>{{$value->alamatpemesanan}}</h4>
-            <h4 style="text-align:justify"><b>Jasa Yang Diperlukan: </b>{{$value->jenispemesanan}} (Rp. {{number_format($value->biayajasa,2)}})</h4>
-            <h4 style="text-align:justify"><b>Catatan: </b>{{$value->catatan}}</h4>
-            @if($value->fotopemesanan1 != "" && $value->fotopemesanan2 != "")
-            <h4 style="text-align:justify"><b>Foto: 
-            @endif
-            	@if($value->fotopemesanan1 != "")
-            	<a href="{{asset('images/fotoproduk')}}/{{$value->fotopemesanan1}}" target="_blank"><img style="margin-top:-10px;width:150px" src="{{asset('images/fotoproduk')}}/{{$value->fotopemesanan1}}"></a> 
-            	@endif
-            	@if($value->fotopemesanan2 != "")
-            	<a href="{{asset('images/fotoproduk')}}/{{$value->fotopemesanan2}}" target="_blank"><img style="margin-top:-10px;width:150px" src="{{asset('images/fotoproduk')}}/{{$value->fotopemesanan2}}"></a></b></h4>
-           		@endif
-            <form action="{{url('permintaanpesanan')}}/{{$value->id_pemesanan}}/tolak" method="POST">
-        	<input type="hidden" name="_token" value="{{ csrf_token() }}">
-        	<h4 style="text-align:justify"><b>Alasan Penolakan: </b><textarea class="form-control" name="alasanpenolakan" required></textarea></h4>
-            <div class="row" style="padding-right:24px">
-            	<div class="col-md-10">
-            	</div>
-            	<div class="col-md-1">
-			            <button type="submit" class="btn" style="background-color:red">Tolak</button>
-			        </form>
-            	</div>
-            	<div class="col-md-1">
-			        <form action="{{url('permintaanpesanan')}}/{{$value->id_pemesanan}}/terima" method="POST">
-		                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-			            <button type="submit" class="btn btn-primary">Terima</button>
-			        </form>
-            	</div>
-        	</div>
+
+        {{-- Alerts --}}
+        @if(Session::has('message_success'))
+            <div class="alert alert-success animate-fadeIn">
+                <div class="alert-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="alert-content">{{ Session::get('message_success') }}</div>
+            </div>
+        @endif
+        @if(Session::has('message_failed'))
+            <div class="alert alert-danger animate-fadeIn">
+                <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+                <div class="alert-content">{{ Session::get('message_failed') }}</div>
+            </div>
+        @endif
+
+        {{-- Active Orders Summary --}}
+        @if(count($pesanan) > 0)
+        <div class="active-orders animate-fadeIn">
+            <div class="orders-header">
+                <h3><i class="fas fa-calendar-check"></i> Pesanan Aktif</h3>
+                <span class="orders-count">{{ count($pesanan) }} pesanan</span>
+            </div>
+            <div class="orders-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nomor Pemesanan</th>
+                            <th>Tanggal Kedatangan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $i = 1; @endphp
+                        @foreach($pesanan as $value)
+                        <tr>
+                            <td>{{ $i }}</td>
+                            <td><span class="order-number">{{ $value->nomorpemesanan }}</span></td>
+                            <td>{{ $value->tanggalbekerja }}</td>
+                            <td>
+                                <a href="{{ url('riwayatpemesanan') }}/{{ $value->id_pemesanan }}" class="btn btn-sm btn-ghost">
+                                    <i class="fas fa-eye"></i> Detail
+                                </a>
+                            </td>
+                        </tr>
+                        @php $i++; @endphp
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
-	</div>
-	@endforeach
-	@else
-	<h5 style="margin-left:-15px">Belum Ada Permintaan Pesanan</h5>
-	@endif
+        @endif
+
+        {{-- Note --}}
+        <div class="info-note animate-fadeIn">
+            <i class="fas fa-lightbulb"></i>
+            <p>Sebelum menerima pemesanan, sebaiknya survei terlebih dahulu ke tempat pelanggan untuk memastikan detail pekerjaan.</p>
+        </div>
+
+        {{-- Request Cards --}}
+        @if(count($permintaan) > 0)
+            <div class="request-list">
+                @foreach($permintaan as $key => $value)
+                <div class="request-card animate-fadeIn" style="animation-delay: {{ $key * 0.1 }}s">
+                    <div class="request-header">
+                        <div class="customer-info">
+                            <div class="customer-avatar">
+                                @if($value->fotoprofil)
+                                    <img src="{{ asset('images/fotoprofil') }}/{{ $value->fotoprofil }}" alt="Customer">
+                                @else
+                                    <i class="fas fa-user"></i>
+                                @endif
+                            </div>
+                            <div class="customer-details">
+                                <h4>{{ $value->namapelanggan }}</h4>
+                                <span class="customer-id">ID: {{ $value->kodeuser }}</span>
+                            </div>
+                        </div>
+                        <div class="order-badge">
+                            <span>{{ $value->nomorpemesanan }}</span>
+                        </div>
+                    </div>
+
+                    <div class="request-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-phone"></i>
+                                <div>
+                                    <label>No HP</label>
+                                    <span>{{ $value->nomorhandphone }}</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-tags"></i>
+                                <div>
+                                    <label>Kategori</label>
+                                    <span>{{ $value->kategoritukang }}</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-list"></i>
+                                <div>
+                                    <label>Jenis</label>
+                                    <span>@include('include/harianorborongan')</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-calendar"></i>
+                                <div>
+                                    <label>Kedatangan</label>
+                                    <span>{{ $value->tanggalbekerja }}</span>
+                                </div>
+                            </div>
+                            @if($value->kategoripemesanan != '0')
+                            <div class="info-item">
+                                <i class="fas fa-calendar-check"></i>
+                                <div>
+                                    <label>Selesai</label>
+                                    <span>{{ $value->tanggalselesai }}</span>
+                                </div>
+                            </div>
+                            @endif
+                            <div class="info-item info-item-full">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div>
+                                    <label>Alamat</label>
+                                    <span>{{ $value->alamatpemesanan }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="service-info">
+                            <div class="service-badge">
+                                <i class="fas fa-tools"></i>
+                                <span>{{ $value->jenispemesanan }}</span>
+                            </div>
+                            <div class="service-price">
+                                Rp {{ number_format($value->biayajasa, 0, ',', '.') }}
+                            </div>
+                        </div>
+
+                        @if($value->catatan)
+                        <div class="notes-section">
+                            <label><i class="fas fa-sticky-note"></i> Catatan:</label>
+                            <p>{{ $value->catatan }}</p>
+                        </div>
+                        @endif
+
+                        @if($value->fotopemesanan1 || $value->fotopemesanan2)
+                        <div class="photos-section">
+                            <label><i class="fas fa-images"></i> Foto:</label>
+                            <div class="photo-grid">
+                                @if($value->fotopemesanan1)
+                                <a href="{{ asset('images/fotoproduk') }}/{{ $value->fotopemesanan1 }}" target="_blank" class="photo-item">
+                                    <img src="{{ asset('images/fotoproduk') }}/{{ $value->fotopemesanan1 }}" alt="Foto 1">
+                                </a>
+                                @endif
+                                @if($value->fotopemesanan2)
+                                <a href="{{ asset('images/fotoproduk') }}/{{ $value->fotopemesanan2 }}" target="_blank" class="photo-item">
+                                    <img src="{{ asset('images/fotoproduk') }}/{{ $value->fotopemesanan2 }}" alt="Foto 2">
+                                </a>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="request-footer">
+                        <form action="{{ url('permintaanpesanan') }}/{{ $value->id_pemesanan }}/tolak" method="POST" class="reject-form">
+                            @csrf
+                            <div class="reject-reason">
+                                <label>Alasan Penolakan:</label>
+                                <textarea name="alasanpenolakan" placeholder="Masukkan alasan jika menolak..." required></textarea>
+                            </div>
+                            <div class="action-buttons">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-times"></i> Tolak
+                                </button>
+                        </form>
+                                <form action="{{ url('permintaanpesanan') }}/{{ $value->id_pemesanan }}/terima" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-check"></i> Terima
+                                    </button>
+                                </form>
+                            </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        @else
+            <div class="empty-state animate-fadeIn">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h3>Belum Ada Permintaan</h3>
+                <p>Saat ini tidak ada permintaan pesanan baru dari pelanggan</p>
+            </div>
+        @endif
+    </div>
 </div>
-@endsection
-@section('datatable')
-<script src="{{ asset('js/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('js/dataTables.bootstrap.min.js') }}"></script>
+
+<style>
+.request-page {
+    padding: var(--space-6) 0 var(--space-16);
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    margin-bottom: var(--space-8);
+}
+
+.header-icon {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    background: var(--gradient-accent);
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: white;
+}
+
+.header-icon .badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 24px;
+    height: 24px;
+    background: var(--danger);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.header-text h1 {
+    font-size: 1.75rem;
+    margin-bottom: var(--space-1);
+}
+
+.header-text p {
+    color: var(--text-secondary);
+}
+
+/* Active Orders */
+.active-orders {
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--space-6);
+    overflow: hidden;
+}
+
+.orders-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-5);
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.orders-header h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.orders-header i {
+    color: var(--success);
+}
+
+.orders-count {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+}
+
+.orders-table {
+    overflow-x: auto;
+}
+
+.orders-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table th,
+.orders-table td {
+    padding: var(--space-4);
+    text-align: left;
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.orders-table th {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+}
+
+.order-number {
+    font-weight: 600;
+    color: var(--success);
+}
+
+/* Info Note */
+.info-note {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-8);
+}
+
+.info-note i {
+    color: #f59e0b;
+    font-size: 1.25rem;
+}
+
+.info-note p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+/* Request Cards */
+.request-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.request-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.request-card:hover {
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.request-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-5);
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.customer-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.customer-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--gradient-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.customer-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.customer-details h4 {
+    font-size: 1.1rem;
+    margin-bottom: var(--space-1);
+}
+
+.customer-id {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+}
+
+.order-badge {
+    padding: var(--space-2) var(--space-4);
+    background: var(--gradient-accent);
+    border-radius: var(--radius-full);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.request-body {
+    padding: var(--space-6);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+}
+
+.info-item-full {
+    grid-column: 1 / -1;
+}
+
+.info-item i {
+    width: 32px;
+    height: 32px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--success);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.info-item label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-bottom: 2px;
+}
+
+.info-item span {
+    font-size: 0.9rem;
+}
+
+.service-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-4);
+}
+
+.service-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-secondary);
+}
+
+.service-badge i {
+    color: var(--success);
+}
+
+.service-price {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--success);
+}
+
+.notes-section,
+.photos-section {
+    margin-bottom: var(--space-4);
+}
+
+.notes-section label,
+.photos-section label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-2);
+}
+
+.notes-section p {
+    padding: var(--space-3);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.photo-grid {
+    display: flex;
+    gap: var(--space-3);
+}
+
+.photo-item {
+    width: 120px;
+    height: 90px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-primary);
+}
+
+.photo-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.request-footer {
+    padding: var(--space-5);
+    background: var(--bg-tertiary);
+    border-top: 1px solid var(--border-primary);
+}
+
+.reject-reason {
+    margin-bottom: var(--space-4);
+}
+
+.reject-reason label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-2);
+}
+
+.reject-reason textarea {
+    width: 100%;
+    padding: var(--space-3);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    min-height: 60px;
+    resize: vertical;
+}
+
+.action-buttons {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: var(--space-16);
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-xl);
+}
+
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--bg-tertiary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-6);
+    font-size: 2rem;
+    color: var(--text-tertiary);
+}
+
+.empty-state h3 {
+    margin-bottom: var(--space-2);
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .request-header {
+        flex-direction: column;
+        gap: var(--space-4);
+        text-align: center;
+    }
+    
+    .customer-info {
+        flex-direction: column;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+    }
+}
+</style>
 @endsection
