@@ -20,7 +20,7 @@ class HomeController extends Controller {
 	 */
 	public function __construct()
 	{
-		$this->middleware('auth');
+		// Middleware moved to routes in Laravel 11d to routes in Laravel 11
 	}
 
 	/**

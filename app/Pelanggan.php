@@ -6,4 +6,6 @@ class Pelanggan extends Model {
 
 	protected $table = 'pelanggan';
 	protected $primaryKey = 'id_pelanggan';
+	public $incrementing = true;
+	protected $fillable = ['namapelanggan'];
 }

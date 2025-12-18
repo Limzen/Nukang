@@ -1,9 +1,9 @@
-<?php if(Session::has('message_success')): ?>
+<?php if(Session::has('message_success') && false): ?>{{-- Shown in app.blade.php --}}
 <div class="alert alert-success">
    	<?php echo Session::get('message_success')?>
 </div>
 <?php endif;?>
-<?php if(Session::has('message_failed')): ?>
+<?php if(Session::has('message_failed') && false): ?>{{-- Shown in app.blade.php --}}
 <div class="alert alert-danger" style="margin-bottom:10px;">
     <?php echo Session::get('message_failed')?>
 </div>
@@ -20,11 +20,11 @@
 </center>
 <div class="row" style="margin:0px;padding-top:20px">
 	<ul class="nav nav-pills" style="background-color:##5485e4">
-		<li class="{{ Request::is('caritukang/*/rincianbiaya') ? 'active' : '' }}"><a href="{{url('caritukang')}}/{{$idtukang}}/rincianbiaya">Rincian Biaya</a></li>
-		<li class="{{ Request::is('caritukang/*/pengalamanbekerja') ? 'active' : '' }}"><a href="{{url('caritukang')}}/{{$idtukang}}/pengalamanbekerja">Pengalaman Bekerja</a></li>
-		<li class="{{ Request::is('caritukang/*/deskripsikeahlian') ? 'active' : '' }}"><a href="{{url('caritukang')}}/{{$idtukang}}/deskripsikeahlian">Deskripsi Keahlian</a></li>
-		<li class="{{ Request::is('caritukang/*/komentarpelanggan') ? 'active' : '' }}"><a href="{{url('caritukang')}}/{{$idtukang}}/komentarpelanggan">Komentar Pelanggan</a></li>
-		<li class="{{ Request::is('caritukang/*/lokasi') ? 'active' : '' }}"><a href="{{url('caritukang')}}/{{$idtukang}}/lokasi">Lokasi</a></li>
+		<li class="{{ Request::is('cari-tukang/*/rincian-biaya') ? 'active' : '' }}"><a href="{{url('cari-tukang')}}/{{$idtukang}}/rincian-biaya">Rincian Biaya</a></li>
+		<li class="{{ Request::is('cari-tukang/*/pengalaman-bekerja') ? 'active' : '' }}"><a href="{{url('cari-tukang')}}/{{$idtukang}}/pengalaman-bekerja">Pengalaman Bekerja</a></li>
+		<li class="{{ Request::is('cari-tukang/*/deskripsi-keahlian') ? 'active' : '' }}"><a href="{{url('cari-tukang')}}/{{$idtukang}}/deskripsi-keahlian">Deskripsi Keahlian</a></li>
+		<li class="{{ Request::is('cari-tukang/*/komentar-pelanggan') ? 'active' : '' }}"><a href="{{url('cari-tukang')}}/{{$idtukang}}/komentar-pelanggan">Komentar Pelanggan</a></li>
+		<li class="{{ Request::is('cari-tukang/*/lokasi') ? 'active' : '' }}"><a href="{{url('cari-tukang')}}/{{$idtukang}}/lokasi">Lokasi</a></li>
 	</ul>	
 	<hr style="margin:0px;margin-top:5px">
 </div>

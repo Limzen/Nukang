@@ -56,23 +56,43 @@ Route::middleware(['auth'])->group(function () {
 
 	Route::get('databahanmaterial/{id}/ubahstatus', [\App\Http\Controllers\DataBahanMaterialController::class, 'ubahstatus']);
 
-	Route::get('ubahhargajarak', function(Request $request) {
+	// Ubah Harga Jarak - dengan hyphen (new URL)
+	Route::get('ubah-harga-jarak', function(Request $request) {
 		$hargajarak = \App\HargaJarak::find("1");
+		if(!$hargajarak) {
+			$hargajarak = new \App\HargaJarak;
+			$hargajarak->id_hargajarak = 1;
+			$hargajarak->hargajarak = 5000;
+			$hargajarak->save();
+		}
 		return view('ubahhargajarak',compact('hargajarak'));
 	});
 
-	Route::post('ubahhargajarak', function(Request $request) {
+	Route::post('ubah-harga-jarak', function(Request $request) {
 		$hargajarak = \App\HargaJarak::find("1");
+		if(!$hargajarak) {
+			$hargajarak = new \App\HargaJarak;
+			$hargajarak->id_hargajarak = 1;
+		}
 		$hargajarak->hargajarak = $request->input('hargajarak');
 		$hargajarak->save();
-		return redirect()->to('ubahhargajarak')->with('message_success', 'Harga Jarak Berhasil Diubah!!');
+		return redirect()->to('ubah-harga-jarak')->with('message_success', 'Harga Jarak Berhasil Diubah!!');
 	});
-	Route::get('konfirmasiupdatesaldo', function(Request $request) {
+
+	// Backward compatibility - redirect old URL to new
+	Route::get('ubahhargajarak', function() {
+		return redirect()->to('ubah-harga-jarak');
+	});
+	Route::post('ubahhargajarak', function(Request $request) {
+		return redirect()->to('ubah-harga-jarak');
+	});
+	Route::get('konfirmasi-update-saldo', function(Request $request) {
 		$updatesaldo = \App\RiwayatTransaksi::join('users','users.id','=','riwayattransaksi.id')->join('pelanggan','pelanggan.id','=','riwayattransaksi.id')->where('statustransaksi','=','0')->where('jenistransaksi','=','Pengisian Saldo')->get();
 		return view('adminkonfirmasiupdatesaldo',compact('updatesaldo'));
 	});
+	Route::get('konfirmasiupdatesaldo', function() { return redirect()->to('konfirmasi-update-saldo'); });
 
-	Route::post('konfirmasiupdatesaldo/terima', function(Request $request) {
+	Route::post('konfirmasi-update-saldo/terima', function(Request $request) {
 		$terima = \App\RiwayatTransaksi::find($request->input('idriwayat'));
 		$terima->statustransaksi = "1";
 		$user = \App\User::find($terima->id);
@@ -86,9 +106,9 @@ Route::middleware(['auth'])->group(function () {
 		$notifikasi->dari = '1';
 		$notifikasi->jenisnotifikasi = "riwayattransaksi";
 	    $notifikasi->save();
-		return redirect()->to('konfirmasiupdatesaldo')->with('message_success', 'Update Saldo Berhasil Dilakukan!!');
+		return redirect()->to('konfirmasi-update-saldo')->with('message_success', 'Update Saldo Berhasil Dilakukan!!');
 	});
-	Route::post('konfirmasiupdatesaldo/tolak', function(Request $request) {
+	Route::post('konfirmasi-update-saldo/tolak', function(Request $request) {
 		$terima = \App\RiwayatTransaksi::find($request->input('idriwayat'));
 		$terima->statustransaksi = "2";
 		$terima->save();
@@ -99,15 +119,16 @@ Route::middleware(['auth'])->group(function () {
 		$notifikasi->dari = '1';
 		$notifikasi->jenisnotifikasi = "riwayattransaksi";
 	    $notifikasi->save();
-		return redirect()->to('konfirmasiupdatesaldo')->with('message_failed', 'Penolakan Update Saldo Berhasil Dilakukan!!');
+		return redirect()->to('konfirmasi-update-saldo')->with('message_failed', 'Penolakan Update Saldo Berhasil Dilakukan!!');
 	});
 
-	Route::get('konfirmasitariksaldo', function(Request $request) {
+	Route::get('konfirmasi-tarik-saldo', function(Request $request) {
 		$tariksaldo = \App\RiwayatTransaksi::join('users','users.id','=','riwayattransaksi.id')->join('tukang','tukang.id','=','riwayattransaksi.id')->where('statustransaksi','=','0')->where('jenistransaksi','=','Penarikan Saldo')->get();
 		return view('adminkonfirmasitariksaldo',compact('tariksaldo'));
 	});
+	Route::get('konfirmasitariksaldo', function() { return redirect()->to('konfirmasi-tarik-saldo'); });
 
-	Route::post('konfirmasitariksaldo/terima', function(Request $request) {
+	Route::post('konfirmasi-tarik-saldo/terima', function(Request $request) {
 		$terima = \App\RiwayatTransaksi::find($request->input('idriwayat'));
 		$terima->statustransaksi = "1";
 		$terima->save();
@@ -118,9 +139,9 @@ Route::middleware(['auth'])->group(function () {
 		$notifikasi->dari = '1';
 		$notifikasi->jenisnotifikasi = "riwayattransaksi";
 	    $notifikasi->save();
-		return redirect()->to('konfirmasitariksaldo')->with('message_success', 'Penarikan Saldo Berhasil Dikonfirmasikan!!');
+		return redirect()->to('konfirmasi-tarik-saldo')->with('message_success', 'Penarikan Saldo Berhasil Dikonfirmasikan!!');
 	});
-	Route::post('konfirmasitariksaldo/tolak', function(Request $request) {
+	Route::post('konfirmasi-tarik-saldo/tolak', function(Request $request) {
 		$terima = \App\RiwayatTransaksi::find($request->input('idriwayat'));
 		$terima->statustransaksi = "2";
 		$user = \App\User::find($terima->id);
@@ -134,11 +155,11 @@ Route::middleware(['auth'])->group(function () {
 		$notifikasi->dari = '1';
 		$notifikasi->jenisnotifikasi = "riwayattransaksi";
 	    $notifikasi->save();
-		return redirect()->to('konfirmasitariksaldo')->with('message_failed', 'Penolakan Penarikan Saldo Berhasil Dilakukan!!');
+		return redirect()->to('konfirmasi-tarik-saldo')->with('message_failed', 'Penolakan Penarikan Saldo Berhasil Dilakukan!!');
 	});
 
 
-	Route::get('riwayatpemesanan/{id}/lihatpeta', function($id, Request $request) {
+	Route::get('riwayat-pemesanan/{id}/lihat-peta', function($id, Request $request) {
 		function haversineGreatCircleDistance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000)
 		{
 			$latFrom = deg2rad($latitudeFrom);
@@ -169,19 +190,20 @@ Route::middleware(['auth'])->group(function () {
 		$terima->save();
 		return redirect()->to('home')->with('message_failed', 'Verifikasi Penyedia Jasa Renovasi Ditolak');
 	});
-	Route::get('pengaturanjasakeahlian', function(Request $request) {
+	Route::get('pengaturan-jasa-keahlian', function(Request $request) {
 		$jenispemesanan = \App\JenisPemesanan::where('id_kategoritukang','=',Auth::user()->id_kategoritukang)->get();
 		$jasatersediaharian = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',Auth::user()->id_tukang)->where('jenisjasatersedia','=','0')->get();
 		$jasatersediaborongan = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',Auth::user()->id_tukang)->where('jenisjasatersedia','=','1')->get();
 		return view('pengaturanjasadankeahlian')->with(['jenispemesanan'=>$jenispemesanan,'jasatersediaharian'=>$jasatersediaharian,'jasatersediaborongan'=>$jasatersediaborongan]);
 	});
+	Route::get('pengaturanjasakeahlian', function() { return redirect()->to('pengaturan-jasa-keahlian'); });
 	Route::get('notifikasi/{id}/markasread', function($id, Request $request) {
 		$notifikasi = \App\Notifikasi::find($id);
 		$notifikasi->statusnotifikasi = '1';
 		$notifikasi->save();
 		return redirect()->to('notifikasi')->with('message_success', 'Notifikasi berhasil dipindahkan');
 	});
-	Route::post('pengaturanjasakeahlian', function(Request $request) {
+	Route::post('pengaturan-jasa-keahlian', function(Request $request) {
 		if($request->input('kurikulum') != "" && $request->input('kurikulum2') != "")
 		{
 			$user = \App\User::join('tukang','tukang.id','=','users.id')->find(Auth::user()->id);
@@ -227,23 +249,47 @@ Route::middleware(['auth'])->group(function () {
 			$simpan->deskripsikeahlian = $request->input('deskripsi');
 			$simpan->statusjasakeahlian = "1";
 			$simpan->save();
-			return redirect()->to('pengaturanjasakeahlian')->with('message_success', 'Pengaturan Jasa dan Keahlian Berhasil Diubah');
+			return redirect()->to('pengaturan-jasa-keahlian')->with('message_success', 'Pengaturan Jasa dan Keahlian Berhasil Diubah');
 		}
 		else
-			return redirect()->to('pengaturanjasakeahlian')->with('message_failed', 'Pengaturan Jasa dan Keahlian Tidak Dapat Dilakukan Karena Ada Form Yang Belum Diisi');
+			return redirect()->to('pengaturan-jasa-keahlian')->with('message_failed', 'Pengaturan Jasa dan Keahlian Tidak Dapat Dilakukan Karena Ada Form Yang Belum Diisi');
 	});
-	Route::get('pengaturanakun', function(Request $request) {
+	Route::get('pengaturan-akun', function(Request $request) {
 
 			return view('pengaturanakun');
 	});
-	Route::post('pengaturanakun', function(Request $request) {
+	Route::get('pengaturanakun', function() { return redirect()->to('pengaturan-akun'); });
+	Route::post('pengaturan-akun', function(Request $request) {
 		if($request->input('latitude') != "")
 		{
 			$users = \App\User::find(Auth::user()->id);
 			if(Auth::user()->statuspengguna == '2')
 			{
 				$tukang = \App\Tukang::find(Auth::user()->id_tukang);
-				$tukang->namatukang = $request->input('name');
+				if(!$tukang) {
+					// Create tukang if not exists with all required defaults
+					$tukang = new \App\Tukang;
+					$tukang->id = Auth::user()->id;
+					$tukang->namatukang = $request->input('name');
+					$tukang->id_kategoritukang = 1; // default category
+					$tukang->lamapengalamanbekerja = '0';
+					$tukang->pengalamanbekerja = '';
+					$tukang->deskripsikeahlian = '';
+					$tukang->rating = 0;
+					$tukang->jumlahvote = 0;
+					$tukang->totalvote = 0;
+					$tukang->statuseditprofil = '0';
+					$tukang->statusjasakeahlian = '0';
+					$tukang->fotoktp = '';
+					$tukang->fotosim = '';
+					$tukang->fotohasilkerja = '';
+					$tukang->save();
+					
+					// Update user's id_tukang
+					$users->id_tukang = $tukang->id_tukang;
+				} else {
+					$tukang->namatukang = $request->input('name');
+				}
 				$tukang->statuseditprofil = '1';
 				if($request->hasFile('fotoprofil'))
 				{
@@ -253,17 +299,42 @@ Route::middleware(['auth'])->group(function () {
 				}
 				$tukang->save();
 			}
-			else
+			else if(Auth::user()->statuspengguna == '1')
 			{
 				$pelanggan = \App\Pelanggan::find(Auth::user()->id_pelanggan);
-				$pelanggan->namapelanggan = $request->input('name');
+				if($pelanggan) {
+					$pelanggan->namapelanggan = $request->input('name');
+					if($request->hasFile('fotoprofil'))
+					{
+						$fotoprofil = 'fotoprofil' . Auth::user()->id . '.jpg';
+						$request->file('fotoprofil')->move('images/fotoprofil',$fotoprofil);
+						$users->fotoprofil = $fotoprofil;
+					}
+					$pelanggan->save();
+				} else {
+					// Create pelanggan if not exists
+					$pelanggan = new \App\Pelanggan;
+					$pelanggan->id = Auth::user()->id;
+					$pelanggan->namapelanggan = $request->input('name');
+					$pelanggan->save();
+					
+					if($request->hasFile('fotoprofil'))
+					{
+						$fotoprofil = 'fotoprofil' . Auth::user()->id . '.jpg';
+						$request->file('fotoprofil')->move('images/fotoprofil',$fotoprofil);
+						$users->fotoprofil = $fotoprofil;
+					}
+				}
+			}
+			else
+			{
+				// Admin - just update photo if exists
 				if($request->hasFile('fotoprofil'))
 				{
 					$fotoprofil = 'fotoprofil' . Auth::user()->id . '.jpg';
 					$request->file('fotoprofil')->move('images/fotoprofil',$fotoprofil);
 					$users->fotoprofil = $fotoprofil;
 				}
-				$pelanggan->save();
 			}
 			if($request->input('password')!="")
 			{
@@ -278,13 +349,13 @@ Route::middleware(['auth'])->group(function () {
 			$users->longtitude = $request->input('longtitude');
 			
 			$users->save();
-			return redirect()->to('pengaturanakun')->with('message_success', 'Informasi akun dan profil berhasil diperbaharui');
+			return redirect()->to('pengaturan-akun')->with('message_success', 'Informasi akun dan profil berhasil diperbaharui');
 		}
 		else
-			return redirect()->to('pengaturanakun')->with('message_failed', 'Informasi lokasi mapping belum ditandai');
+			return redirect()->to('pengaturan-akun')->with('message_failed', 'Informasi lokasi mapping belum ditandai');
 	});
 
-	Route::get('caritukang', function(Request $request) {
+	Route::get('cari-tukang', function(Request $request) {
 
 	    // ===============================
 	    // VALIDASI KOORDINAT USER
@@ -340,7 +411,9 @@ Route::middleware(['auth'])->group(function () {
 	    // ===============================
 	    // QUERY TUKANG
 	    // ===============================
-	    $query = \App\Tukang::join('users', 'users.id', '=', 'tukang.id')
+	    $query = \App\Tukang::select('tukang.*', 'users.latitude', 'users.longtitude', 'users.email', 'users.alamat', 'users.fotoprofil', 'kategoritukang.kategoritukang as namakategori')
+	        ->join('users', 'users.id', '=', 'tukang.id')
+	        ->join('kategoritukang', 'kategoritukang.id_kategoritukang', '=', 'tukang.id_kategoritukang')
 	        ->where('statuseditprofil', '1')
 	        ->where('statusjasakeahlian', '1');
 
@@ -378,6 +451,11 @@ Route::middleware(['auth'])->group(function () {
 	    }
 
 	    // ===============================
+	    // KATEGORI TUKANG
+	    // ===============================
+	    $kategoritukang = \App\KategoriTukang::get();
+
+	    // ===============================
 	    // RETURN VIEW
 	    // ===============================
 	    return view('caritukang', compact(
@@ -385,41 +463,46 @@ Route::middleware(['auth'])->group(function () {
 	        'lat',
 	        'lng',
 	        'radius',
-	        'radiusnya'
+	        'radiusnya',
+	        'kategoritukang'
 	    ));
 	});
+	Route::get('caritukang', function(Request $request) { 
+	    return redirect()->to('cari-tukang' . ($request->getQueryString() ? '?' . $request->getQueryString() : '')); 
+	});
 
-	Route::get('caritukang/{idtukang}/rincianbiaya', function($idtukang, Request $request) {
+	Route::get('cari-tukang/{idtukang}/rincian-biaya', function($idtukang, Request $request) {
 		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->find($idtukang);
 		$jasatersediaharian = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','0')->get();
 		$jasatersediaborongan = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','1')->get();
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan','=',Auth::user()->id_pelanggan)->get();
 		return view('detailtukangrincianbiaya')->with(['idtukang'=>$idtukang,'tukang'=>$tukang,'jasatersediaharian'=>$jasatersediaharian,'jasatersediaborongan'=>$jasatersediaborongan,'alamatpelanggan'=>$alamatpelanggan]);
 	});
-	Route::get('caritukang/{idtukang}/pengalamanbekerja', function($idtukang, Request $request) {
+	Route::get('cari-tukang/{idtukang}/pengalaman-bekerja', function($idtukang, Request $request) {
 		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->find($idtukang);
 		$jasatersediaharian = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','0')->get();
 		$jasatersediaborongan = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','1')->get();
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan','=',Auth::user()->id_pelanggan)->get();
 		return view('detailtukangpengalamanbekerja')->with(['idtukang'=>$idtukang,'tukang'=>$tukang,'jasatersediaharian'=>$jasatersediaharian,'jasatersediaborongan'=>$jasatersediaborongan,'alamatpelanggan'=>$alamatpelanggan]);
 	});
-	Route::get('caritukang/{idtukang}/deskripsikeahlian', function($idtukang, Request $request) {
+	Route::get('cari-tukang/{idtukang}/deskripsi-keahlian', function($idtukang, Request $request) {
 		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->find($idtukang);
 		$jasatersediaharian = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','0')->get();
 		$jasatersediaborongan = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','1')->get();
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan','=',Auth::user()->id_pelanggan)->get();
 		return view('detailtukangdeskripsikeahlian')->with(['idtukang'=>$idtukang,'tukang'=>$tukang,'jasatersediaharian'=>$jasatersediaharian,'jasatersediaborongan'=>$jasatersediaborongan,'alamatpelanggan'=>$alamatpelanggan]);
 	});
-	Route::get('caritukang/{idtukang}/komentarpelanggan', function($idtukang, Request $request) {
+	Route::get('cari-tukang/{idtukang}/komentar-pelanggan', function($idtukang, Request $request) {
 		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->find($idtukang);
 		$jasatersediaharian = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','0')->get();
 		$jasatersediaborongan = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','1')->get();
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan','=',Auth::user()->id_pelanggan)->get();
-		$jumlahkomentar = \App\Pemesanan::where('id_tukang','=',$idtukang)->where('id_pelanggan','=',Auth::user()->id_pelanggan)->where('statuspemesanan','=','4')->get();
-		$ulasan = \App\Ulasan::select('ulasan.created_at as tanggalulasan','pelanggan.*','ulasan.*','users.*')->join('pelanggan','pelanggan.id_pelanggan','=','ulasan.id_pelanggan')->join('users','users.id','=','pelanggan.id')->where('id_tukang','=',$idtukang)->orderby('id_ulasan','DESC')->get();
+		$jumlahkomentar = \App\Pemesanan::where('pemesanan.id_tukang','=',$idtukang)->where('pemesanan.id_pelanggan','=',Auth::user()->id_pelanggan)->where('statuspemesanan','=','4')->get();
+		$ulasan = \App\Ulasan::select('ulasan.created_at as tanggalulasan','pelanggan.*','ulasan.*','users.*')->join('pelanggan','pelanggan.id_pelanggan','=','ulasan.id_pelanggan')->join('users','users.id','=','pelanggan.id')->where('ulasan.id_tukang','=',$idtukang)->orderby('id_ulasan','DESC')->get();
+
 		return view('detailtukangkomentarpelanggan')->with(['idtukang'=>$idtukang,'tukang'=>$tukang,'jasatersediaharian'=>$jasatersediaharian,'jasatersediaborongan'=>$jasatersediaborongan,'alamatpelanggan'=>$alamatpelanggan,'jumlahkomentar'=>$jumlahkomentar,'ulasan'=>$ulasan]);
 	});
-	Route::post('caritukang/{idtukang}/komentarpelanggan', function($idtukang, Request $request) {
+	Route::post('cari-tukang/{idtukang}/komentar-pelanggan', function($idtukang, Request $request) {
 		$rating = new \App\Ulasan;
 		$tukang = \App\Tukang::find($idtukang);
 		$pemesanan = \App\Pemesanan::find($request->input('idpemesanan'));
@@ -441,16 +524,34 @@ Route::middleware(['auth'])->group(function () {
 	    $notifikasi->jenisnotifikasi = "caritukang/" . $idtukang . "/komentarpelanggan";
 	    $notifikasi->statusnotifikasi = "0";
 	    $notifikasi->save();
-		return redirect()->to('caritukang' . '/' . $idtukang . '/komentarpelanggan')->with('message_success', 'Terima Kasih Telah Memberikan Ulasan Terhadap Penggunaan Jasa Penyedia Jasa Renovasi Yang Bersangkutan');
+		return redirect()->to('cari-tukang' . '/' . $idtukang . '/komentar-pelanggan')->with('message_success', 'Terima Kasih Telah Memberikan Ulasan Terhadap Penggunaan Jasa Penyedia Jasa Renovasi Yang Bersangkutan');
 	});
-	Route::get('caritukang/{idtukang}/lokasi', function($idtukang, Request $request) {
+	
+	// Backward compatibility redirects for old caritukang sub-URLs
+	Route::get('caritukang/{idtukang}/rincianbiaya', function($idtukang) { 
+		return redirect()->to('cari-tukang/' . $idtukang . '/rincian-biaya'); 
+	});
+	Route::get('caritukang/{idtukang}/pengalamanbekerja', function($idtukang) { 
+		return redirect()->to('cari-tukang/' . $idtukang . '/pengalaman-bekerja'); 
+	});
+	Route::get('caritukang/{idtukang}/deskripsikeahlian', function($idtukang) { 
+		return redirect()->to('cari-tukang/' . $idtukang . '/deskripsi-keahlian'); 
+	});
+	Route::get('caritukang/{idtukang}/komentarpelanggan', function($idtukang) { 
+		return redirect()->to('cari-tukang/' . $idtukang . '/komentar-pelanggan'); 
+	});
+	Route::get('caritukang/{idtukang}/lokasi', function($idtukang) { 
+		return redirect()->to('cari-tukang/' . $idtukang . '/lokasi'); 
+	});
+	
+	Route::get('cari-tukang/{idtukang}/lokasi', function($idtukang, Request $request) {
 		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->find($idtukang);
 		$jasatersediaharian = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','0')->get();
 		$jasatersediaborongan = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','1')->get();
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan','=',Auth::user()->id_pelanggan)->get();
 		return view('detailtukanglokasi')->with(['idtukang'=>$idtukang,'tukang'=>$tukang,'jasatersediaharian'=>$jasatersediaharian,'jasatersediaborongan'=>$jasatersediaborongan,'alamatpelanggan'=>$alamatpelanggan]);
 	});
-	Route::post('caritukang/{idtukang}/pesan', function($idtukang, Request $request) {
+	Route::post('cari-tukang/{idtukang}/pesan', function($idtukang, Request $request) {
 		function quickRandom($length)
 		{
 		    $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -461,7 +562,7 @@ Route::middleware(['auth'])->group(function () {
 		else
 			$hasilpotonganjp = explode(",", $request->input('jenispemesanan2'));
 		if(Auth::user()->saldo < $hasilpotonganjp[1])
-			return redirect()->to('caritukang' . '/' . $idtukang . '/rincianbiaya')->with('message_failed', 'Saldo Tidak Mencukupi');
+			return redirect()->to('cari-tukang' . '/' . $idtukang . '/rincian-biaya')->with('message_failed', 'Saldo Tidak Mencukupi');
 		else
 		{
 			$pesan = new \App\Pemesanan;
@@ -506,18 +607,19 @@ Route::middleware(['auth'])->group(function () {
 			$notifikasi->dari = Auth::user()->id;
 			$notifikasi->jenisnotifikasi = "permintaanpesanan";
 		    $notifikasi->save();
-			return redirect()->to('caritukang' . '/' . $idtukang . '/rincianbiaya')->with('message_success', 'Pemesanan Penyedia Jasa Renovasi Berhasil');
+			return redirect()->to('cari-tukang' . '/' . $idtukang . '/rincian-biaya')->with('message_success', 'Pemesanan Penyedia Jasa Renovasi Berhasil');
 		}
 	});
 
-	Route::get('tambahalamat', function(Request $request) {
+	Route::get('tambah-alamat', function(Request $request) {
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan','=',Auth::user()->id_pelanggan)->get();
 		return view('tambahalamatpelanggan')->with(['alamatpelanggan'=>$alamatpelanggan]);
 	});
-	Route::post('tambahalamat', function(Request $request) {
+	Route::get('tambahalamat', function() { return redirect()->to('tambah-alamat'); });
+	Route::post('tambah-alamat', function(Request $request) {
 		if($request->input('latitude') == Auth::user()->latitude)
 		{
-			return redirect()->to('tambahalamat')->with('message_failed', 'Koordinat Peta Belum Diubah');
+			return redirect()->to('tambah-alamat')->with('message_failed', 'Koordinat Peta Belum Diubah');
 		}
 		else
 		{
@@ -527,25 +629,26 @@ Route::middleware(['auth'])->group(function () {
 			$alamatpelanggan->longtitudealamat = $request->input('longtitude');
 			$alamatpelanggan->id_pelanggan = Auth::user()->id_pelanggan;
 			$alamatpelanggan->save();
-			return redirect()->to('tambahalamat')->with('message_success', 'Alamat pelanggan berhasil ditambahkan');
+			return redirect()->to('tambah-alamat')->with('message_success', 'Alamat pelanggan berhasil ditambahkan');
 		}
 	});
-	Route::post('tambahalamat/{idalamat}', function($idalamat, Request $request) {
+	Route::post('tambah-alamat/{idalamat}', function($idalamat, Request $request) {
 		$alamatpelanggan = \App\AlamatPelanggan::findOrFail($idalamat);
 		$alamatpelanggan->delete();
-		return redirect()->to('tambahalamat')->with('message_success', 'Data Alamat Berhasil Dihapus');
+		return redirect()->to('tambah-alamat')->with('message_success', 'Data Alamat Berhasil Dihapus');
 	});
-	Route::get('isisaldo', function(Request $request) {
+	Route::get('isi-saldo', function(Request $request) {
 		return view('isisaldoelektronik');
 	});
-	Route::post('isisaldo', function(Request $request) {
+	Route::get('isisaldo', function() { return redirect()->to('isi-saldo'); });
+	Route::post('isi-saldo', function(Request $request) {
 		function quickRandom($length)
 		{
 		    $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		    return substr(str_shuffle(str_repeat($pool, 5)), 0, $length);
 		}
 		$saldo = new \App\RiwayatTransaksi;
-		if($request->input('jumlahsaldouser') >= 100000)
+		if($request->input('jumlahsaldouser') >= 10000)
 		{
 			$kode = "KT" . quickRandom(3);
 		    $saldo->kode = $kode;
@@ -561,29 +664,31 @@ Route::middleware(['auth'])->group(function () {
 			$request->file('buktitransfer')->move('images/buktitransfer',$buktitransfer);
 			$saldo->buktitransaksi = $buktitransfer;
 		    $saldo->save();
-			return redirect()->to('isisaldo')->with('message_success', 'Silahkan Menunggu Beberapa Saat, Admin Akan Melakukan Konfirmasi Terhadap Transaksi Anda');
+			return redirect()->to('isi-saldo')->with('message_success', 'Silahkan Menunggu Beberapa Saat, Admin Akan Melakukan Konfirmasi Terhadap Transaksi Anda');
 		}
 		else
-			return redirect()->to('isisaldo')->with('message_failed', 'Saldo Yang di Top Up Kurang dari Rp. 100,000.00');
+			return redirect()->to('isi-saldo')->with('message_failed', 'Saldo Yang di Top Up Kurang dari Rp. 10,000.00');
 	});
-	Route::get('riwayattransaksi', function(Request $request) {
+	Route::get('riwayat-transaksi', function(Request $request) {
 		if(Auth::user()->statuspengguna == "0")
 			$riwayattransaksi = \App\RiwayatTransaksi::get();
 		else
 			$riwayattransaksi = \App\RiwayatTransaksi::where('id','=',Auth::user()->id)->get();
 		return view('riwayattransaksi')->with(['riwayattransaksi'=>$riwayattransaksi]);
 	});
+	Route::get('riwayattransaksi', function() { return redirect()->to('riwayat-transaksi'); });
 	Route::get('notifikasi', function(Request $request) {
 		$notifread = \App\Notifikasi::select('notifikasi.created_at as tanggalnotifikasi','users.*','notifikasi.*')->join('users', 'users.id', '=', 'notifikasi.dari')->where('notifikasi.kepada','=',Auth::user()->id)->where('statusnotifikasi','=','1')->orderBy('id_notifikasi','DESC')->paginate(6);
 		$notifunread = \App\Notifikasi::select('notifikasi.created_at as tanggalnotifikasi','users.*','notifikasi.*')->join('users', 'users.id', '=', 'notifikasi.dari')->where('notifikasi.kepada','=',Auth::user()->id)->where('statusnotifikasi','=','0')->orderBy('id_notifikasi','DESC')->paginate(6);   
 	    return view('notifikasi')->with(['notifread'=>$notifread,'notifunread'=>$notifunread]);
 	});
-	Route::get('permintaanpesanan', function(Request $request) {
+	Route::get('permintaan-pesanan', function(Request $request) {
 		$pesanan = \App\Pemesanan::where('id_tukang','=',Auth::user()->id_tukang)->where('statuspemesanan','=','1')->get();
 		$permintaan = \App\Pemesanan::join('kategoritukang','kategoritukang.id_kategoritukang','=','pemesanan.id_kategoritukang')->join('pelanggan','pelanggan.id_pelanggan','=','pemesanan.id_pelanggan')->join('users','users.id','=','pelanggan.id')->where('id_tukang','=',Auth::user()->id_tukang)->where('statuspemesanan','=','0')->orderby('id_pemesanan','DESC')->get();
 		return view('permintaanpesanan')->with(['pesanan'=>$pesanan,'permintaan'=>$permintaan]);
 	});
-	Route::post('permintaanpesanan/{idpemesanan}/tolak', function($idpemesanan, Request $request) {
+	Route::get('permintaanpesanan', function() { return redirect()->to('permintaan-pesanan'); });
+	Route::post('permintaan-pesanan/{idpemesanan}/tolak', function($idpemesanan, Request $request) {
 		function quickRandom($length)
 		{
 		    $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -604,9 +709,9 @@ Route::middleware(['auth'])->group(function () {
 		$notifikasi->dari = Auth::user()->id;
 		$notifikasi->jenisnotifikasi = "riwayatpemesanan/" . $tolak->id_pemesanan . "?kategori=' . $tolak->id_kategoritukang . '&katakunci=";
 	    $notifikasi->save();
-		return redirect()->to('permintaanpesanan')->with('message_success', 'Permintaan Pesanan Berhasil Ditolak');
+		return redirect()->to('permintaan-pesanan')->with('message_success', 'Permintaan Pesanan Berhasil Ditolak');
 	});
-	Route::post('permintaanpesanan/{idpemesanan}/terima', function($idpemesanan, Request $request) {
+	Route::post('permintaan-pesanan/{idpemesanan}/terima', function($idpemesanan, Request $request) {
 		function quickRandom($length)
 		{
 		    $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -623,12 +728,13 @@ Route::middleware(['auth'])->group(function () {
 		$notifikasi->dari = Auth::user()->id;
 		$notifikasi->jenisnotifikasi = "riwayatpemesanan/" . $terima->id_pemesanan . "?kategori=" . $terima->id_kategoritukang . "&katakunci=";
 	    $notifikasi->save();
-		return redirect()->to('permintaanpesanan')->with('message_success', 'Permintaan Pesanan Berhasil Diterima');
+		return redirect()->to('permintaan-pesanan')->with('message_success', 'Permintaan Pesanan Berhasil Diterima');
 	});
-	Route::get('penarikansaldo', function(Request $request) {
+	Route::get('penarikan-saldo', function(Request $request) {
 		return view('penarikansaldoelektronik');
 	});
-	Route::post('penarikansaldo', function(Request $request) {
+	Route::get('penarikansaldo', function() { return redirect()->to('penarikan-saldo'); });
+	Route::post('penarikan-saldo', function(Request $request) {
 		function quickRandom($length)
 		{
 		    $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -650,10 +756,10 @@ Route::middleware(['auth'])->group(function () {
 		    $saldo->save();
 		    $users->saldo -= $request->input('jumlahsaldouser');
 		    $users->save();
-			return redirect()->to('penarikansaldo')->with('message_success', 'Penarikan Saldo Berhasil Dilakukan, Silahkan Tunggu Konfirmasi Admin');
+			return redirect()->to('penarikan-saldo')->with('message_success', 'Penarikan Saldo Berhasil Dilakukan, Silahkan Tunggu Konfirmasi Admin');
 		}
 		else
-			return redirect()->to('penarikansaldo')->with('message_failed', 'Jumlah Saldo Yang Ingin Ditarik Melebihi Saldo Anda');
+			return redirect()->to('penarikan-saldo')->with('message_failed', 'Jumlah Saldo Yang Ingin Ditarik Melebihi Saldo Anda');
 	});
 	Route::get('riwayatpemesanan', function(Request $request) {
 		if(Auth::user()->statuspengguna == '2')
@@ -663,7 +769,7 @@ Route::middleware(['auth'])->group(function () {
 		}
 		elseif(Auth::user()->statuspengguna == '1')
 		{
-			$riwayatpemesanan = \App\Pemesanan::join('kategoritukang','kategoritukang.id_kategoritukang','=','pemesanan.id_kategoritukang')->join('tukang','tukang.id_tukang','=','pemesanan.id_tukang')->join('users','users.id','=','tukang.id')->where('id_pelanggan','=',Auth::user()->id_pelanggan)->orderby('id_pemesanan','DESC')->get();
+			$riwayatpemesanan = \App\Pemesanan::join('kategoritukang','kategoritukang.id_kategoritukang','=','pemesanan.id_kategoritukang')->join('tukang','tukang.id_tukang','=','pemesanan.id_tukang')->join('users','users.id','=','tukang.id')->where('pemesanan.id_pelanggan','=',Auth::user()->id_pelanggan)->orderby('id_pemesanan','DESC')->get();
 			return view('riwayatpemesanan')->with(['riwayatpemesanan'=>$riwayatpemesanan]);
 		}
 		elseif(Auth::user()->statuspengguna == '0')
@@ -903,24 +1009,29 @@ Route::middleware(['auth'])->group(function () {
 		return view('admindetailriwayatpemesanan');
 	});
 
-	Route::get('informasiuser', function(Request $request) {
+	// Informasi User - dengan hyphen (new URL)
+	Route::get('informasi-user', function(Request $request) {
 		$user = \App\User::where('id','!=',Auth::user()->id)->where('statusverifikasi','>','0')->get();
 		return view('informasiuser',compact('user'));
 	});
 
-	Route::post('informasiuser/blokir', function(Request $request) {
+	Route::post('informasi-user/blokir', function(Request $request) {
 		$terima = \App\User::find($request->input('iduser'));
 		$terima->statusverifikasi = "2";
 		$terima->save();
-		return redirect()->to('informasiuser')->with('message_success', 'User Yang Dipilih Berhasil Diblokir');
+		return redirect()->to('informasi-user')->with('message_success', 'User Yang Dipilih Berhasil Diblokir');
 	});
-	Route::post('informasiuser/buka', function(Request $request) {
+	Route::post('informasi-user/buka', function(Request $request) {
 		$terima = \App\User::find($request->input('iduser'));
 		$terima->statusverifikasi = "1";
 		$terima->save();
-		return redirect()->to('informasiuser')->with('message_success', 'User Yang Dipilih Berhasil Dibuka Blokirnya');
+		return redirect()->to('informasi-user')->with('message_success', 'User Yang Dipilih Berhasil Dibuka Blokirnya');
 	});
 
+	// Backward compatibility for old URL
+	Route::get('informasiuser', function() {
+		return redirect()->to('informasi-user');
+	});
 	Route::get('detailriwayatpemesanan', function(Request $request) {
 		return view('detailriwayatpemesanan');
 	});
@@ -1077,6 +1188,140 @@ Route::get('/home', [\App\Http\Controllers\HomeController::class, 'index'])->nam
 
 Route::get('auth/registertukang', function(Request $request) {
     return view('auth/registertukang');
+});
+
+// ===============================
+// TEMPORARY: Create Test Users Route
+// Visit: /create-test-users to create test accounts
+// REMOVE THIS IN PRODUCTION!
+// ===============================
+Route::get('create-test-users', function() {
+    $results = [];
+    
+    try {
+        // 1. CREATE ADMIN
+        $adminEmail = 'admin@nukang.com';
+        $admin = \App\User::where('email', $adminEmail)->first();
+        if (!$admin) {
+            $admin = \App\User::create([
+                'email' => $adminEmail,
+                'password' => bcrypt('password123'),
+                'kodeuser' => 'ADMIN001',
+                'statuspengguna' => '0',
+                'saldo' => 0,
+                'statusverifikasi' => '1',
+                'fotoprofil' => 'nopicture.jpg',
+            ]);
+            $results[] = "✅ Admin created: $adminEmail";
+        } else {
+            $results[] = "⚠️ Admin already exists: $adminEmail";
+        }
+    } catch (\Exception $e) {
+        $results[] = "❌ Error creating Admin: " . $e->getMessage();
+    }
+
+    try {
+        // 2. CREATE PELANGGAN
+        $pelangganEmail = 'pelanggan@nukang.com';
+        $pelangganUser = \App\User::where('email', $pelangganEmail)->first();
+        if (!$pelangganUser) {
+            $lastId = \App\User::orderBy('id', 'DESC')->first();
+            $newId = $lastId ? $lastId->id + 1 : 1;
+            
+            // Create pelanggan record first
+            $pelangganData = new \App\Pelanggan;
+            $pelangganData->id = $newId;
+            $pelangganData->namapelanggan = 'Test Pelanggan';
+            $pelangganData->save();
+            
+            $pelangganUser = \App\User::create([
+                'email' => $pelangganEmail,
+                'password' => bcrypt('password123'),
+                'kodeuser' => 'NIP001',
+                'statuspengguna' => '1',
+                'saldo' => 100000,
+                'statusverifikasi' => '1',
+                'fotoprofil' => 'nopicture.jpg',
+                'latitude' => '3.5952',
+                'longtitude' => '98.6722',
+                'alamat' => 'Medan, Indonesia',
+            ]);
+            $results[] = "✅ Pelanggan created: $pelangganEmail";
+        } else {
+            $results[] = "⚠️ Pelanggan already exists: $pelangganEmail";
+        }
+    } catch (\Exception $e) {
+        $results[] = "❌ Error creating Pelanggan: " . $e->getMessage();
+    }
+
+    try {
+        // 3. CREATE TUKANG
+        $tukangEmail = 'tukang@nukang.com';
+        $tukangUser = \App\User::where('email', $tukangEmail)->first();
+        if (!$tukangUser) {
+            $lastId = \App\User::orderBy('id', 'DESC')->first();
+            $newId = $lastId ? $lastId->id + 1 : 1;
+            
+            // Get first kategori tukang
+            $kategori = \App\KategoriTukang::first();
+            $kategoriId = $kategori ? $kategori->id_kategoritukang : 1;
+            
+            // Create tukang record first
+            \App\Tukang::create([
+                'id' => $newId,
+                'namatukang' => 'Test Tukang Profesional',
+                'id_kategoritukang' => $kategoriId,
+                'deskripsikeahlian' => 'Tukang profesional berpengalaman.',
+                'lamapengalamanbekerja' => 5,
+                'fotoktp' => 'nopicture.jpg',
+                'fotosim' => 'nopicture.jpg',
+                'fotohasilkerja' => 'nopicture.jpg',
+                'statuseditprofil' => '1',
+                'statusjasakeahlian' => '1',
+            ]);
+            
+            $tukangUser = \App\User::create([
+                'email' => $tukangEmail,
+                'password' => bcrypt('password123'),
+                'kodeuser' => 'TAC001',
+                'statuspengguna' => '2',
+                'saldo' => 50000,
+                'statusverifikasi' => '1',
+                'fotoprofil' => 'nopicture.jpg',
+                'latitude' => '3.5952',
+                'longtitude' => '98.6722',
+                'alamat' => 'Medan, Indonesia',
+                'nomorhandphone' => '081234567890',
+            ]);
+            $results[] = "✅ Tukang created: $tukangEmail";
+        } else {
+            $results[] = "⚠️ Tukang already exists: $tukangEmail";
+        }
+    } catch (\Exception $e) {
+        $results[] = "❌ Error creating Tukang: " . $e->getMessage();
+    }
+
+    // Return nice HTML response
+    $html = '<!DOCTYPE html><html><head><title>Create Test Users</title>';
+    $html .= '<meta charset="UTF-8">';
+    $html .= '<style>body{font-family:Inter,sans-serif;background:#0a0a0f;color:#fff;padding:40px;}</style></head>';
+    $html .= '<body><h1 style="color:#10b981;">🛠️ Nukang - Test Users</h1>';
+    $html .= '<div style="background:#1a1a25;padding:20px;border-radius:12px;margin:20px 0;">';
+    foreach($results as $result) {
+        $html .= '<p style="margin:10px 0;font-size:14px;word-break:break-all;">' . htmlspecialchars($result) . '</p>';
+    }
+    $html .= '</div>';
+    $html .= '<h2 style="color:#10b981;">📋 Test Accounts</h2>';
+    $html .= '<table style="width:100%;border-collapse:collapse;background:#1a1a25;border-radius:12px;">';
+    $html .= '<tr style="background:#12121a;"><th style="padding:15px;text-align:left;border-bottom:1px solid #333;">Role</th><th style="padding:15px;text-align:left;border-bottom:1px solid #333;">Email</th><th style="padding:15px;text-align:left;border-bottom:1px solid #333;">Password</th></tr>';
+    $html .= '<tr><td style="padding:15px;border-bottom:1px solid #333;">👔 Admin</td><td style="padding:15px;border-bottom:1px solid #333;color:#10b981;">admin@nukang.com</td><td style="padding:15px;border-bottom:1px solid #333;">password123</td></tr>';
+    $html .= '<tr><td style="padding:15px;border-bottom:1px solid #333;">👤 Pelanggan</td><td style="padding:15px;border-bottom:1px solid #333;color:#10b981;">pelanggan@nukang.com</td><td style="padding:15px;border-bottom:1px solid #333;">password123</td></tr>';
+    $html .= '<tr><td style="padding:15px;">🔧 Tukang</td><td style="padding:15px;color:#10b981;">tukang@nukang.com</td><td style="padding:15px;">password123</td></tr>';
+    $html .= '</table>';
+    $html .= '<p style="margin-top:20px;"><a href="/auth/login" style="background:#10b981;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">🔐 Go to Login Page</a></p>';
+    $html .= '</body></html>';
+    
+    return $html;
 });
 
 // Auth routes - handled by Laravel's auth system

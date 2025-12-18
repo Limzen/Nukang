@@ -153,14 +153,43 @@ Atau buat Virtual Host (advanced):
 
 ## 🎯 Testing Aplikasi
 
-1. Buka browser
-2. Akses: `http://localhost:8000` (jika pakai `php artisan serve`)
-3. Anda akan melihat halaman welcome/login
+### Cara 1: Fresh Install dengan Seeding (Recommended)
 
-### Default User (Jika ada di database):
-- **Admin**: Cek di database tabel `users` dengan `statuspengguna = 0`
-- **Customer**: `statuspengguna = 1`
-- **Worker/Tukang**: `statuspengguna = 2`
+Jika database kosong atau mau reset, jalankan:
+
+```bash
+# Migrate database + seed test data
+php artisan migrate --seed
+```
+
+Atau jika hanya mau seed saja (database sudah di-migrate):
+
+```bash
+php artisan db:seed
+```
+
+### Cara 2: Import SQL File
+
+1. Buka phpMyAdmin
+2. Pilih database `jasarenovasi`
+3. Import file `jasarenovasi.sql`
+
+---
+
+## 🔐 Akun Testing
+
+Setelah seeding, akun testing berikut sudah tersedia:
+
+| Role | Email | Password | Saldo |
+|------|-------|----------|-------|
+| 👔 **Admin** | `admin@nukang.com` | `password123` | Rp 0 |
+| 👤 **Pelanggan** | `pelanggan@nukang.com` | `password123` | Rp 500.000 |
+| 🔧 **Tukang** | `tukang@nukang.com` | `password123` | Rp 250.000 |
+
+### Status User (`statuspengguna`):
+- **0** = Admin (memverifikasi, mengelola data master)
+- **1** = Pelanggan/Customer (mencari dan memesan jasa)
+- **2** = Tukang/Worker (menerima pesanan)
 
 ---
 
