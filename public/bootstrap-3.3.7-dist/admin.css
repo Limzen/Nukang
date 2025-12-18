@@ -1,0 +1,154 @@
+.loginbox{
+	margin-top:20px;
+	background-color: white;
+	height:100%;
+}
+.logoadmin
+{
+	height:50px;
+}
+body{
+	margin-left: 50px;
+	margin-right: 50px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+.container{
+	width: 900px;
+	margin-left: auto;
+	margin-right: auto;
+	background-color: white;
+	height: auto;
+	-webkit-box-shadow: 0px 1px 4px 0px rgba(0,0,0,0.4);
+  	-moz-box-shadow: 0px 1px 4px 0px rgba(0,0,0,0.4);
+  	box-shadow: 0px 1px 4px 0px rgba(0,0,0,0.4);
+}
+.header{
+	background: -webkit-linear-gradient(top, #9ed6d3, #00ada7, #018984) fixed;
+	background: -moz-linear-gradient(top, #9ed6d3, #00ada7, #018984) fixed;
+	height: 120px;
+	width: 100%;
+}
+	.logo{
+		padding: 25px;
+		width: 100%;
+	}
+#navul{
+	background: -webkit-linear-gradient(top, #666666, #333333);
+	background: -moz-linear-gradient(top, #666666, #333333);
+	margin: 0;
+	}
+	#navul ul{
+		margin: 0;
+		padding: 10px;
+	}
+	#navul li{
+		margin: 0;
+		display: inline-block;
+		position: relative;
+	}
+	#navul li a:link, #navul li a:visited, #navul li a:active{
+		color: rgb(255, 255, 255);
+		display: block;
+		padding: 6px 12px 6px 12px;
+		text-decoration: none;
+	}
+	#navul ul li a:hover{
+		background: rgb(0, 173, 167);
+		border-radius: 8px;
+	}
+	.warna{
+		background: rgb(0, 173, 167);
+		border-radius: 8px;
+}
+.content{
+	width: 100%;
+	height: 725px;
+	padding: 5px 0px 20px 20px;
+}
+	.content #tabelkhusus{
+		text-align: left;
+		border : none;
+	}
+	.kiri{
+		width: 78%;
+		height: auto;
+		float: left;
+	}
+	.kanan{
+		margin-top:-5px;
+		width: 177px;
+		height: 750px;
+		border-left: 1px solid black;
+		float:left;
+		background: -webkit-linear-gradient(top, #9ed6d3, #00ada7, #018984) fixed;
+		background: -moz-linear-gradient(top, #9ed6d3, #00ada7, #018984) fixed;
+	}
+	.kanan ul{
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.kanan ul li{
+		margin-top: 15px;
+		font-family: tahoma;
+		font-size: 18px;
+		background: -webkit-linear-gradient(top, #666666, #333333);
+		background: -moz-linear-gradient(top, #666666, #333333);
+		width: 130px;
+		padding-top: 10px;
+		padding-bottom: 10px;
+		border-radius: 0 20px 20px 0;
+		padding-left: 20px;
+		padding-right: 5px;
+		box-shadow: 5px 0 5px #939393;
+		-webkit-transition: padding-left 0.6s;
+		-moz-transition: padding-left 0.6;
+	}
+	.kanan a{
+		text-decoration: none;
+		color: white;
+	}
+	.kanan ul li:hover{
+		padding-left: 40px;
+		background: cyan;
+	}
+	#tabelkhusus1{
+		background: -webkit-linear-gradient(top, #666666, #333333);
+		background: -moz-linear-gradient(top, #666666, #333333);
+		color: white;
+	}
+	#tabelkhusus{
+		background: -webkit-linear-gradient(top, #9ed6d3, #00ada7, #018984) fixed;
+		background: -moz-linear-gradient(top, #9ed6d3, #00ada7, #018984) fixed;
+	}
+	footer{
+		background: -webkit-linear-gradient(top, #666666, #333333);
+		background: -moz-linear-gradient(top, #666666, #333333);
+		height: 10px;
+		color: white;
+		padding: 20px;
+	}
+	.nama{
+		float: right;
+		color: #8ec147;
+		padding: 10px;
+		border-radius: 20px;
+	}
+	.nama a:hover{
+		text-decoration: none;
+		color: white;
+	}
+	.kiri h2{
+		color: #7fff00;
+	}
+	hr{
+		height: 2px;
+		background: rgb(0, 173, 167);
+	}
+	.kotaktabel{
+		width: 680px;
+	}
+	.pencarian{
+		margin: 10px;
+	}
