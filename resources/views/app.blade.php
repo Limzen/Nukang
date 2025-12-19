@@ -27,7 +27,7 @@
         <div class="container">
             <div class="navbar-inner">
                 <!-- Brand -->
-                <a href="{{ url('/') }}" class="navbar-brand">
+                <a href="{{ Auth::check() ? url('/home') : url('/') }}" class="navbar-brand">
                     <img src="{{ asset('images/frontslider/logo.png') }}" alt="Logo">
                     <span class="brand-text">Nukang</span>
                 </a>
@@ -118,7 +118,7 @@
                                 <i class="fas fa-chevron-down d-md-block d-none" style="font-size: 0.6rem;"></i>
                             </button>
                             <div class="dropdown-menu" style="right: 0; left: auto; min-width: 240px;">
-                                <div style="padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border-primary); margin-bottom: var(--space-2);">
+                                <div style="padding: var(--space-3) var(--space-4);">
                                     <div style="font-weight: 600; color: var(--text-primary);">
                                         @if(Auth::user()->statuspengguna == "1")
                                             {{ Auth::user()->pelanggan->namapelanggan ?? 'User' }}
@@ -128,20 +128,14 @@
                                             Administrator
                                         @endif
                                     </div>
-                                    <div style="font-size: 0.8rem; color: var(--text-tertiary);">{{ Auth::user()->email }}</div>
                                 </div>
                                 
                                 @if(Auth::user()->statuspengguna == "1")
-                                    <a href="{{ url('tambahalamat') }}" class="dropdown-item"><i class="fas fa-map-marker-alt"></i> Kelola Alamat</a>
-                                    <a href="{{ url('isisaldo') }}" class="dropdown-item"><i class="fas fa-wallet"></i> Isi Saldo</a>
-                                    <a href="{{ url('riwayattransaksi') }}" class="dropdown-item"><i class="fas fa-receipt"></i> Transaksi</a>
+                                    {{-- Kelola Alamat already in quick actions --}}
                                 @elseif(Auth::user()->statuspengguna == "2")
                                     <a href="{{ url('penarikansaldo') }}" class="dropdown-item"><i class="fas fa-money-bill-wave"></i> Tarik Saldo</a>
                                     <a href="{{ url('riwayattransaksi') }}" class="dropdown-item"><i class="fas fa-receipt"></i> Transaksi</a>
                                     <a href="{{ url('pengaturanjasakeahlian') }}" class="dropdown-item"><i class="fas fa-tools"></i> Jasa & Keahlian</a>
-                                @else
-                                    <a href="{{ url('informasi-user') }}" class="dropdown-item"><i class="fas fa-users"></i> Info User</a>
-                                    <a href="{{ url('ubah-harga-jarak') }}" class="dropdown-item"><i class="fas fa-cog"></i> Pengaturan Harga</a>
                                 @endif
                                 
                                 <div class="dropdown-divider"></div>
@@ -166,7 +160,7 @@
     <!-- Mobile Slide Menu -->
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-header">
-            <a href="{{ url('/') }}" class="navbar-brand">
+            <a href="{{ Auth::check() ? url('/home') : url('/') }}" class="navbar-brand">
                 <img src="{{ asset('images/frontslider/logo.png') }}" alt="Logo" style="height: 32px;">
                 <span>Nukang</span>
             </a>
@@ -305,7 +299,7 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <a href="{{ url('/') }}" class="navbar-brand" style="margin-bottom: var(--space-4); display: inline-flex;">
+                    <a href="{{ Auth::check() ? url('/home') : url('/') }}" class="navbar-brand" style="margin-bottom: var(--space-4); display: inline-flex;">
                         <img src="{{ asset('images/frontslider/logo.png') }}" alt="Logo" style="height: 40px;">
                         <span class="brand-text">Nukang</span>
                     </a>

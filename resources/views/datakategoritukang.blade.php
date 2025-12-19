@@ -19,20 +19,6 @@
             </a>
         </div>
 
-        {{-- Alerts --}}
-        @if(Session::has('message_success'))
-            <div class="alert alert-success animate-fadeIn">
-                <div class="alert-icon"><i class="fas fa-check-circle"></i></div>
-                <div class="alert-content">{{ Session::get('message_success') }}</div>
-            </div>
-        @endif
-        @if(Session::has('message_failed'))
-            <div class="alert alert-danger animate-fadeIn">
-                <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
-                <div class="alert-content">{{ Session::get('message_failed') }}</div>
-            </div>
-        @endif
-
         {{-- Stats --}}
         <div class="stats-row animate-fadeIn">
             <div class="stat-card">
@@ -76,7 +62,7 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <form method="POST" action="{{ url('datakategoritukang') }}/{{ $value->id_kategoritukang }}" 
-                                          style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus?')">
+                                          class="delete-form" data-id="{{ $value->id_kategoritukang }}" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn-action btn-delete" title="Hapus">
@@ -273,10 +259,116 @@
     background: var(--danger);
     color: white;
 }
+
+/* Premium SweetAlert2 Styling */
+.swal-popup-premium {
+    border-radius: 16px !important;
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+}
+
+.swal-title-premium {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+    padding-bottom: 0 !important;
+}
+
+.swal-html-premium {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.swal-actions-premium {
+    gap: 12px !important;
+    margin-top: 24px !important;
+}
+
+.swal-confirm-btn {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    color: white !important;
+    padding: 12px 24px !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+}
+
+.swal-confirm-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4) !important;
+}
+
+.swal-cancel-btn {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-secondary) !important;
+    padding: 12px 24px !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    border: 1px solid var(--border-primary) !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.swal-cancel-btn:hover {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-secondary) !important;
+    transform: translateY(-2px) !important;
+}
 </style>
 @endsection
 
 @section('datatable')
 <script src="{{ asset('js/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('js/dataTables.bootstrap.min.js') }}"></script>
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.4/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.4/dist/sweetalert2.all.min.js"></script>
+
+<script>
+// Delete confirmation handler with SweetAlert2
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForms = document.querySelectorAll('.delete-form');
+    deleteForms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            Swal.fire({
+                title: '🗑️ Hapus Kategori',
+                html: '<div style="font-size: 1.1rem; color: var(--text-secondary); margin-top: 12px;">Apakah Anda yakin ingin menghapus kategori tukang ini?<br><span style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 8px; display: block;">Data yang sudah dihapus tidak dapat dikembalikan</span></div>',
+                icon: 'warning',
+                iconColor: '#f59e0b',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="fas fa-trash-alt"></i> Ya, Hapus Data',
+                cancelButtonText: '<i class="fas fa-times"></i> Batal',
+                background: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                backdrop: 'rgba(0,0,0,0.8)',
+                customClass: {
+                    popup: 'swal-popup-premium',
+                    title: 'swal-title-premium',
+                    htmlContainer: 'swal-html-premium',
+                    confirmButton: 'swal-confirm-btn',
+                    cancelButton: 'swal-cancel-btn',
+                    actions: 'swal-actions-premium'
+                },
+                buttonsStyling: false,
+                width: '480px',
+                padding: '2rem'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
 @endsection

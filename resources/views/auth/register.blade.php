@@ -74,12 +74,13 @@
         
         {{-- Right Side - Form --}}
         <div class="register-form-side">
+            {{-- Theme Toggle --}}
+            <button class="theme-toggle" id="themeToggle">
+                <span class="theme-toggle-icon moon"><i class="fas fa-moon"></i></span>
+                <span class="theme-toggle-icon sun"><i class="fas fa-sun"></i></span>
+            </button>
+            
             <div class="form-container">
-                {{-- Theme Toggle --}}
-                <button class="theme-toggle" id="themeToggle">
-                    <span class="theme-toggle-icon moon"><i class="fas fa-moon"></i></span>
-                    <span class="theme-toggle-icon sun"><i class="fas fa-sun"></i></span>
-                </button>
                 {{-- Mobile Logo --}}
                 <a href="{{ url('/') }}" class="mobile-logo">
                     <img src="{{ asset('images/frontslider/logo.png') }}" alt="Nukang">
@@ -359,8 +360,8 @@
 
 .theme-toggle {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: var(--space-6);
+    right: var(--space-6);
     z-index: 10;
 }
 

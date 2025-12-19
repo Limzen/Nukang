@@ -71,30 +71,67 @@
                     </div>
                     
                     <div class="form-field">
-                        <label><i class="fas fa-building"></i> Transfer ke Rekening</label>
+                        <label><i class="fas fa-building"></i> Transfer ke Rekening Tujuan</label>
+                        <p class="field-hint">Pilih rekening tujuan transfer</p>
                         <div class="bank-options">
                             <label class="bank-option">
                                 <input type="radio" name="nomorrekening" value="BCA - 8305123456" checked>
-                                <span class="bank-card">
-                                    <span class="bank-name">BCA</span>
-                                    <span class="bank-number">8305123456</span>
-                                    <span class="bank-holder">A/N KEVIN LIANG</span>
+                                <span class="bank-card bank-bca">
+                                    <div class="bank-header">
+                                        <div class="bank-logo">
+                                            <span class="bank-logo-text">BCA</span>
+                                        </div>
+                                        <i class="fas fa-check-circle bank-check"></i>
+                                    </div>
+                                    <div class="bank-details">
+                                        <span class="bank-number">
+                                            8305123456
+                                            <button type="button" class="btn-copy" onclick="copyAccount('8305123456', this)" title="Copy nomor rekening">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </span>
+                                        <span class="bank-holder">A/N KEVIN LIANG</span>
+                                    </div>
                                 </span>
                             </label>
                             <label class="bank-option">
                                 <input type="radio" name="nomorrekening" value="Mandiri - 123456789011">
-                                <span class="bank-card">
-                                    <span class="bank-name">Mandiri</span>
-                                    <span class="bank-number">123456789011</span>
-                                    <span class="bank-holder">A/N KEVIN LIANG</span>
+                                <span class="bank-card bank-mandiri">
+                                    <div class="bank-header">
+                                        <div class="bank-logo">
+                                            <span class="bank-logo-text">Mandiri</span>
+                                        </div>
+                                        <i class="fas fa-check-circle bank-check"></i>
+                                    </div>
+                                    <div class="bank-details">
+                                        <span class="bank-number">
+                                            123456789011
+                                            <button type="button" class="btn-copy" onclick="copyAccount('123456789011', this)" title="Copy nomor rekening">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </span>
+                                        <span class="bank-holder">A/N KEVIN LIANG</span>
+                                    </div>
                                 </span>
                             </label>
                             <label class="bank-option">
                                 <input type="radio" name="nomorrekening" value="BRI - 445566778888000">
-                                <span class="bank-card">
-                                    <span class="bank-name">BRI</span>
-                                    <span class="bank-number">445566778888000</span>
-                                    <span class="bank-holder">A/N KEVIN LIANG</span>
+                                <span class="bank-card bank-bri">
+                                    <div class="bank-header">
+                                        <div class="bank-logo">
+                                            <span class="bank-logo-text">BRI</span>
+                                        </div>
+                                        <i class="fas fa-check-circle bank-check"></i>
+                                    </div>
+                                    <div class="bank-details">
+                                        <span class="bank-number">
+                                            445566778888000
+                                            <button type="button" class="btn-copy" onclick="copyAccount('445566778888000', this)" title="Copy nomor rekening">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </span>
+                                        <span class="bank-holder">A/N KEVIN LIANG</span>
+                                    </div>
                                 </span>
                             </label>
                         </div>
@@ -318,6 +355,12 @@
     color: var(--text-tertiary);
 }
 
+.field-hint {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin: var(--space-1) 0 var(--space-3);
+}
+
 .form-field input,
 .form-field select {
     width: 100%;
@@ -387,14 +430,13 @@
 
 /* Bank Options */
 .bank-options {
-    display: flex;
-    gap: var(--space-3);
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
 }
 
 .bank-option {
-    flex: 1;
-    min-width: 140px;
+    position: relative;
 }
 
 .bank-option input {
@@ -402,38 +444,154 @@
 }
 
 .bank-card {
-    display: block;
-    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5);
     background: var(--bg-tertiary);
     border: 2px solid var(--border-primary);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 120px;
+}
+
+.bank-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 60px;
+    opacity: 0.1;
+    transition: all 0.3s ease;
+}
+
+.bank-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .bank-option input:checked + .bank-card {
     border-color: var(--success);
     background: rgba(16, 185, 129, 0.05);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
 }
 
-.bank-name {
-    display: block;
+/* Bank Brand Colors */
+.bank-bca::before {
+    background: linear-gradient(135deg, #005faa, #003d6b);
+}
+
+.bank-mandiri::before {
+    background: linear-gradient(135deg, #ffb500, #d89600);
+}
+
+.bank-bri::before {
+    background: linear-gradient(135deg, #0066cc, #004499);
+}
+
+.bank-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bank-logo {
+    width: 56px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: 700;
-    font-size: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.bank-bca .bank-logo {
+    background: linear-gradient(135deg, #005faa, #003d6b);
+}
+
+.bank-mandiri .bank-logo {
+    background: linear-gradient(135deg, #ffb500, #d89600);
+}
+
+.bank-bri .bank-logo {
+    background: linear-gradient(135deg, #0066cc, #004499);
+}
+
+.bank-logo-text {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.bank-check {
+    font-size: 1.25rem;
+    color: var(--text-tertiary);
+    transition: all 0.3s ease;
+}
+
+.bank-option input:checked + .bank-card .bank-check {
     color: var(--success);
-    margin-bottom: var(--space-1);
+    transform: scale(1.1);
+}
+
+.bank-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    position: relative;
+    z-index: 1;
 }
 
 .bank-number {
-    display: block;
-    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    font-size: 1.1rem;
+    font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: var(--space-1);
+    font-family: 'Courier New', monospace;
 }
 
 .bank-holder {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-copy {
+    padding: var(--space-1) var(--space-2);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+}
+
+.btn-copy:hover {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+}
+
+.btn-copy.copied {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+}
+
+.btn-copy.copied i::before {
+    content: '\f00c';
 }
 
 /* Upload Area */
@@ -617,6 +775,19 @@ function handleUpload(input) {
         };
         reader.readAsDataURL(input.files[0]);
     }
+}
+
+function copyAccount(accountNumber, button) {
+    // Copy to clipboard
+    navigator.clipboard.writeText(accountNumber).then(() => {
+        // Visual feedback
+        button.classList.add('copied');
+        setTimeout(() => {
+            button.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+    });
 }
 </script>
 @endsection

@@ -470,30 +470,35 @@ Route::middleware(['auth'])->group(function () {
 	Route::get('caritukang', function(Request $request) { 
 	    return redirect()->to('cari-tukang' . ($request->getQueryString() ? '?' . $request->getQueryString() : '')); 
 	});
+	
+	// Detailtukang route - redirect to cari-tukang rincian-biaya
+	Route::get('detailtukang/{idtukang}', function($idtukang) {
+		return redirect()->to('cari-tukang/' . $idtukang . '/rincian-biaya');
+	});
 
 	Route::get('cari-tukang/{idtukang}/rincian-biaya', function($idtukang, Request $request) {
-		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->find($idtukang);
+		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->findOrFail($idtukang);
 		$jasatersediaharian = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','0')->get();
 		$jasatersediaborongan = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','1')->get();
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan','=',Auth::user()->id_pelanggan)->get();
 		return view('detailtukangrincianbiaya')->with(['idtukang'=>$idtukang,'tukang'=>$tukang,'jasatersediaharian'=>$jasatersediaharian,'jasatersediaborongan'=>$jasatersediaborongan,'alamatpelanggan'=>$alamatpelanggan]);
 	});
 	Route::get('cari-tukang/{idtukang}/pengalaman-bekerja', function($idtukang, Request $request) {
-		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->find($idtukang);
+		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->findOrFail($idtukang);
 		$jasatersediaharian = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','0')->get();
 		$jasatersediaborongan = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','1')->get();
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan','=',Auth::user()->id_pelanggan)->get();
 		return view('detailtukangpengalamanbekerja')->with(['idtukang'=>$idtukang,'tukang'=>$tukang,'jasatersediaharian'=>$jasatersediaharian,'jasatersediaborongan'=>$jasatersediaborongan,'alamatpelanggan'=>$alamatpelanggan]);
 	});
 	Route::get('cari-tukang/{idtukang}/deskripsi-keahlian', function($idtukang, Request $request) {
-		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->find($idtukang);
+		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->findOrFail($idtukang);
 		$jasatersediaharian = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','0')->get();
 		$jasatersediaborongan = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','1')->get();
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan','=',Auth::user()->id_pelanggan)->get();
 		return view('detailtukangdeskripsikeahlian')->with(['idtukang'=>$idtukang,'tukang'=>$tukang,'jasatersediaharian'=>$jasatersediaharian,'jasatersediaborongan'=>$jasatersediaborongan,'alamatpelanggan'=>$alamatpelanggan]);
 	});
 	Route::get('cari-tukang/{idtukang}/komentar-pelanggan', function($idtukang, Request $request) {
-		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->find($idtukang);
+		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->findOrFail($idtukang);
 		$jasatersediaharian = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','0')->get();
 		$jasatersediaborongan = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','1')->get();
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan','=',Auth::user()->id_pelanggan)->get();
@@ -545,7 +550,7 @@ Route::middleware(['auth'])->group(function () {
 	});
 	
 	Route::get('cari-tukang/{idtukang}/lokasi', function($idtukang, Request $request) {
-		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->find($idtukang);
+		$tukang = \App\Tukang::join('kategoritukang','kategoritukang.id_kategoritukang','=','tukang.id_kategoritukang')->join('users','users.id','=','tukang.id')->findOrFail($idtukang);
 		$jasatersediaharian = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','0')->get();
 		$jasatersediaborongan = \App\JasaTersedia::join('jenispemesanan','jenispemesanan.id_jenispemesanan','=','jasatersedia.id_jenispemesanan')->where('id_tukang','=',$idtukang)->where('jenisjasatersedia','=','1')->get();
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan','=',Auth::user()->id_pelanggan)->get();
