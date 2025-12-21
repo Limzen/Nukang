@@ -38,9 +38,9 @@ Dokumen ini menjelaskan secara detail **setiap bagian kode** dalam aplikasi Nuka
 
 | Teknologi | Versi | Fungsi |
 |-----------|-------|--------|
-| **Laravel** | 5.x | Framework PHP (backend) |
-| **PHP** | 7.0+ | Bahasa pemrograman server |
-| **MySQL** | 5.7+ | Database relasional |
+| **Laravel** | 11 | Framework PHP (backend) |
+| **PHP** | 8.2+ | Bahasa pemrograman server |
+| **MySQL** | 8.0+ | Database relasional |
 | **Blade** | - | Template engine Laravel |
 | **Bootstrap** | 4.x | CSS framework |
 | **Font Awesome** | 5.x | Icon library |

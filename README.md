@@ -1,11 +1,11 @@
 # 🔨 Nukang - Marketplace Jasa Tukang Profesional
 
-[![Laravel](https://img.shields.io/badge/Laravel-5.x-red.svg)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-7.0+-blue.svg)](https://php.net)
-[![MySQL](https://img.shields.io/badge/MySQL-5.7+-orange.svg)](https://mysql.com)
+[![Laravel](https://img.shields.io/badge/Laravel-11-red.svg)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-blue.svg)](https://php.net)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0+-orange.svg)](https://mysql.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Nukang** adalah aplikasi marketplace berbasis web yang menghubungkan pelanggan dengan penyedia jasa tukang profesional (renovasi indoor, outdoor, elektrikal, plumbing, dll). Aplikasi ini dibangun menggunakan **Laravel 5.x** dengan arsitektur MVC.
+**Nukang** adalah aplikasi marketplace berbasis web yang menghubungkan pelanggan dengan penyedia jasa tukang profesional (renovasi indoor, outdoor, elektrikal, plumbing, dll). Aplikasi ini dibangun menggunakan **Laravel 11** dengan arsitektur MVC.
 
 ---
 
@@ -60,9 +60,9 @@
 
 | Komponen | Minimum | Recommended |
 |----------|---------|-------------|
-| **PHP** | 7.0 | 7.4+ |
-| **MySQL** | 5.7 | 8.0 |
-| **Composer** | 1.x | 2.x |
+| **PHP** | 8.2 | 8.3+ |
+| **MySQL** | 8.0 | 8.0+ |
+| **Composer** | 2.x | 2.x |
 | **RAM** | 2 GB | 4 GB+ |
 | **Disk** | 500 MB | 1 GB+ |
 | **OS** | Windows 10, macOS, Linux | Any |
