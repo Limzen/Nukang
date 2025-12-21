@@ -184,17 +184,70 @@ php artisan key:generate
 4. Kolasi: `utf8mb4_general_ci`
 5. Klik **"Create"**
 
-#### 4.3 Import Data Database
+---
+
+### Langkah 5: Setup Data Database
+
+> **⚠️ PENTING**: Ada 2 cara untuk setup database. Pilih **SATU** cara saja!
+
+#### 📌 Cara 1: Import SQL File (DIREKOMENDASIKAN) ✅
+
+Cara ini **DIREKOMENDASIKAN** untuk memastikan struktur database dan data sample **sama persis** dengan yang ada di laptop pengembang utama.
+
 1. Klik database `jasarenovasi` yang baru dibuat
 2. Klik tab **"Import"** di menu atas
 3. Klik **"Choose File"** atau **"Browse"**
 4. Pilih file `jasarenovasi.sql` dari folder project (`D:\Project\Nukang\jasarenovasi.sql`)
 5. Klik **"Go"** / **"Import"** di bagian bawah
-6. Tunggu hingga muncul pesan "Import has been successfully finished"
+6. Tunggu hingga muncul pesan **"Import has been successfully finished"**
+
+**Keuntungan menggunakan cara ini:**
+- ✅ Struktur tabel sudah pasti benar
+- ✅ Semua data sample (akun testing, data tukang, dll) sudah tersedia
+- ✅ Tidak perlu khawatir error migration
+- ✅ Langsung bisa testing dengan akun yang sudah ada
 
 ---
 
-### Langkah 5: Konfigurasi File .env
+#### 📌 Cara 2: Menggunakan Migration Laravel (ALTERNATIF)
+
+Gunakan cara ini **HANYA** jika:
+- Anda ingin database kosong tanpa data sample
+- File `jasarenovasi.sql` tidak tersedia
+- Anda ingin belajar cara kerja migration Laravel
+
+```bash
+# Jalankan migration untuk membuat semua tabel
+php artisan migrate
+
+# Jika ada error, coba reset dan migrate ulang (⚠️ MENGHAPUS SEMUA DATA!)
+php artisan migrate:fresh
+```
+
+**⚠️ Perhatian untuk Migration:**
+
+Jika muncul error seperti ini:
+```
+SQLSTATE[42000]: Syntax error or access violation: 1075 Incorrect table definition
+```
+
+Ini berarti ada masalah dengan file migration. **Solusinya**: gunakan **Cara 1 (Import SQL)** sebagai gantinya.
+
+---
+
+### 📊 Perbandingan Kedua Cara
+
+| Aspek | Import SQL ✅ | Migration |
+|-------|--------------|-----------|
+| **Kemudahan** | Sangat mudah | Perlu troubleshooting |
+| **Data Sample** | Sudah ada | Harus input manual |
+| **Akun Testing** | Langsung tersedia | Buat sendiri |
+| **Risiko Error** | Rendah | Lebih tinggi |
+| **Rekomendasi** | **DIREKOMENDASIKAN** | Untuk advanced user |
+
+---
+
+### Langkah 6: Konfigurasi File .env
 
 Buka file `.env` dengan VS Code atau Notepad, lalu sesuaikan bagian database:
 
@@ -215,20 +268,6 @@ DB_PASSWORD=
 > **📝 Catatan**: 
 > - Password default XAMPP biasanya **kosong** (tidak perlu diisi)
 > - Jika Anda set password MySQL, isi di `DB_PASSWORD`
-
----
-
-### Langkah 6: Jalankan Migrasi (Opsional)
-
-Jika ada perubahan struktur database setelah import SQL:
-
-```bash
-# Jalankan migrasi pending (jika ada)
-php artisan migrate
-
-# Atau reset dan migrate ulang (HATI-HATI: hapus semua data!)
-php artisan migrate:fresh
-```
 
 ---
 

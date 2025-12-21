@@ -83,7 +83,7 @@ INSERT INTO `alamatpelanggan` (`id_alamatpelanggan`, `id_pelanggan`, `alamatpela
 --
 
 CREATE TABLE IF NOT EXISTS `bahanmaterial` (
-  `id_bahanmaterial` int(10) unsigned NOT NULL,
+  `id_bahanmaterial` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_kategoritukang` int(11) NOT NULL,
   `kodebahanmaterial` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
   `bahanmaterial` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
@@ -92,7 +92,8 @@ CREATE TABLE IF NOT EXISTS `bahanmaterial` (
   `fotobahanmaterial` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `statusbahanmaterial` varchar(1) COLLATE utf8_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id_bahanmaterial`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -722,12 +723,6 @@ ALTER TABLE `alamatpelanggan`
   ADD PRIMARY KEY (`id_alamatpelanggan`);
 
 --
--- Indexes for table `bahanmaterial`
---
-ALTER TABLE `bahanmaterial`
-  ADD PRIMARY KEY (`id_bahanmaterial`);
-
---
 -- Indexes for table `hargajarak`
 --
 ALTER TABLE `hargajarak`
@@ -825,11 +820,6 @@ ALTER TABLE `admin`
 --
 ALTER TABLE `alamatpelanggan`
   MODIFY `id_alamatpelanggan` int(10) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=22;
---
--- AUTO_INCREMENT for table `bahanmaterial`
---
-ALTER TABLE `bahanmaterial`
-  MODIFY `id_bahanmaterial` int(10) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=7;
 --
 -- AUTO_INCREMENT for table `hargajarak`
 --
