@@ -361,6 +361,166 @@
         gap: var(--space-3);
     }
 }
+
+/* Google Maps InfoWindow Premium Styling */
+.gm-style .gm-style-iw-c {
+    padding: 0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+    max-width: 320px !important;
+    overflow: visible !important;
+}
+
+.gm-style .gm-style-iw-d {
+    overflow: visible !important;
+    max-height: none !important;
+}
+
+.gm-style .gm-style-iw-tc {
+    display: none;
+}
+
+.gm-style .gm-style-iw-t::after {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.gm-ui-hover-effect {
+    top: 8px !important;
+    right: 8px !important;
+    width: 28px !important;
+    height: 28px !important;
+    background: #f1f5f9 !important;
+    border-radius: 6px !important;
+    opacity: 1 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.gm-ui-hover-effect:hover {
+    background: #e2e8f0 !important;
+}
+
+.gm-ui-hover-effect span {
+    width: 16px !important;
+    height: 16px !important;
+    margin: 6px !important;
+    background-color: #64748b !important;
+}
+
+.tukang-infowindow {
+    padding: 16px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-radius: 16px;
+    min-width: 260px;
+}
+
+.iw-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.iw-avatar {
+    flex-shrink: 0;
+}
+
+.iw-avatar img {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 3px solid #10b981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.iw-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.iw-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.iw-rating {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.iw-rating i {
+    font-size: 12px;
+}
+
+.iw-rating-value {
+    color: #64748b;
+    font-size: 12px;
+    margin-left: 4px;
+    font-weight: 500;
+}
+
+.iw-details {
+    margin-bottom: 14px;
+}
+
+.iw-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #475569;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.iw-detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.iw-detail-item i {
+    font-size: 14px;
+    color: #10b981;
+    width: 18px;
+    text-align: center;
+}
+
+.iw-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #10b981, #14b8a6);
+    color: white !important;
+    text-decoration: none !important;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.iw-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.iw-button i {
+    font-size: 14px;
+}
 </style>
 
 <script>
@@ -505,40 +665,39 @@ function initMap() {
                 }
             }
 
-            // Enhanced info window
+            // Enhanced info window with premium styling
             let infoWindow = new google.maps.InfoWindow({
                 content: `
-                    <div style="padding: 12px; font-family: 'Inter', sans-serif; min-width: 220px;">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                            <img src="{{ asset('images/fotoprofil') }}/${t.foto}" 
-                                 onerror="this.src='{{ asset('images/fotoprofil/default.png') }}'"
-                                 style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; border: 2px solid #10b981;">
-                            <div>
-                                <strong style="color: #10b981; font-size: 14px; display: block;">${t.nama}</strong>
-                                <span style="color: #666; font-size: 11px;">${t.kode}</span>
+                    <div class="tukang-infowindow">
+                        <div class="iw-header">
+                            <div class="iw-avatar">
+                                <img src="{{ asset('images/fotoprofil') }}/${t.foto}" 
+                                     onerror="this.src='{{ asset('images/fotoprofil/default.png') }}'">
+                            </div>
+                            <div class="iw-info">
+                                <div class="iw-name">${t.nama}</div>
+                                <div class="iw-rating">
+                                    ${stars}
+                                    <span class="iw-rating-value">(${t.rating.toFixed(1)})</span>
+                                </div>
                             </div>
                         </div>
-                        <div style="margin-bottom: 8px;">
-                            <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
-                                ${stars}
-                                <span style="color: #888; font-size: 11px; margin-left: 4px;">(${t.rating.toFixed(1)})</span>
+                        <div class="iw-details">
+                            <div class="iw-detail-item">
+                                <i class="fas fa-tools"></i>
+                                <span>${t.kategori}</span>
                             </div>
-                            <div style="color: #555; font-size: 12px;">
-                                <i class="fas fa-tag" style="color: #8b5cf6; margin-right: 4px;"></i>${t.kategori}
-                            </div>
-                            <div style="color: #555; font-size: 12px; margin-top: 2px;">
-                                <i class="fas fa-briefcase" style="color: #3b82f6; margin-right: 4px;"></i>${t.pengalaman} tahun pengalaman
+                            <div class="iw-detail-item">
+                                <i class="fas fa-briefcase"></i>
+                                <span>${t.pengalaman} tahun pengalaman</span>
                             </div>
                         </div>
-                        <a href="cari-tukang/${t.id}/rincian-biaya" 
-                           style="display: block; text-align: center; padding: 8px 16px; 
-                                  background: linear-gradient(135deg, #10b981, #14b8a6); 
-                                  color: white; text-decoration: none; border-radius: 8px; 
-                                  font-size: 13px; font-weight: 600;">
-                            <i class="fas fa-eye" style="margin-right: 6px;"></i>Lihat Detail
+                        <a href="cari-tukang/${t.id}/rincian-biaya" class="iw-button">
+                            <i class="fas fa-eye"></i> Lihat Detail
                         </a>
                     </div>
-                `
+                `,
+                maxWidth: 320
             });
 
             marker.addListener('click', function () {
