@@ -3,7 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateBahanmaterialTable extends Migration {
+class CreateBahanmaterialTable extends Migration
+{
 
 	/**
 	 * Run the migrations.
@@ -12,15 +13,15 @@ class CreateBahanmaterialTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create('bahanmaterial', function(Blueprint $table)
-		{
+		Schema::create('bahanmaterial', function (Blueprint $table) {
 			$table->increments('id_bahanmaterial');
-			$table->increments('id_kategoritukang');
-			$table->string('kodebahanmaterial',10);
-			$table->string('bahanmaterial',100);
+			$table->integer('id_kategoritukang');
+			$table->string('kodebahanmaterial', 10);
+			$table->string('bahanmaterial', 100);
 			$table->text('informasibahanmaterial');
-			$table->string('hargabahanmaterial',50);
-			$table->string('fotobahanmaterial',50);
+			$table->string('hargabahanmaterial', 50);
+			$table->string('fotobahanmaterial', 50);
+			$table->string('statusbahanmaterial', 1)->default('1');
 			$table->timestamps();
 		});
 	}
