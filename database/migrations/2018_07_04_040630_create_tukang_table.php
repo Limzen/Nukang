@@ -18,17 +18,16 @@ class CreateTukangTable extends Migration
 			$table->integer('id');
 			$table->integer('id_kategoritukang');
 			$table->string('namatukang', 255);
-			$table->text('pengalamanbekerja')->nullable();
+			$table->text('pengalamanbekerja');
 			$table->string('lamapengalamanbekerja', 2);
-			$table->text('deskripsikeahlian')->nullable();
-			$table->double('rating')->default(0);
-			$table->integer('totalvote')->default(0);
-			$table->integer('jumlahvote')->default(0);
+			$table->text('deskripsikeahlian');
+			$table->double('rating');
+			$table->integer('totalvote');
+			$table->integer('jumlahvote');
 			$table->string('fotoktp', 50);
 			$table->string('fotosim', 50);
-			$table->string('fotohasilkerja', 50)->default('');
-			$table->string('statusjasakeahlian', 1)->default('0');
-			$table->string('statuseditprofil', 1)->default('0');
+			$table->string('statusjasakeahlian', 1);
+			$table->string('statuseditprofil', 1);
 			$table->timestamps();
 		});
 	}
