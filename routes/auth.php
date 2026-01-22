@@ -150,7 +150,7 @@ Route::post('auth/registertukang', function (Request $request) {
     if ($request->hasFile('fotoprofil')) {
         $file = $request->file('fotoprofil');
         $fotoprofilName = time() . '_profil_' . $file->getClientOriginalName();
-        $file->move(public_path('images/profil'), $fotoprofilName);
+        $file->move(public_path('images/fotoprofil'), $fotoprofilName);
     }
 
     if ($request->hasFile('fotohasilkerja')) {

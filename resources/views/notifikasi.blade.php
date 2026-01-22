@@ -57,12 +57,10 @@
                                     <a href="{{ url($value->jenisnotifikasi) }}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-eye"></i> Lihat
                                     </a>
-                                    @if(!isset($isAdmin) || !$isAdmin)
-                                        <a href="{{ url('notifikasi') }}/{{ $value->id_notifikasi }}/markasread"
-                                            class="btn btn-ghost btn-sm">
-                                            <i class="fas fa-check"></i> Tandai Dibaca
-                                        </a>
-                                    @endif
+                                    <a href="{{ url('notifikasi') }}/{{ $value->id_notifikasi }}/markasread"
+                                        class="btn btn-ghost btn-sm">
+                                        <i class="fas fa-check"></i> Tandai Dibaca
+                                    </a>
                                 </div>
                             </div>
                         @endforeach
