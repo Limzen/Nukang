@@ -1,3 +1,11 @@
 /vendor
 /node_modules
 .env
+.idea/
+/public/images/profil/
+/public/images/dokumen/
+/public/images/hasilkerja/
+/public/images/fotoproduk/
+/public/images/buktitransfer/
+/public/storage/
+/storage/app/public/
