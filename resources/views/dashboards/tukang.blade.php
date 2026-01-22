@@ -5,6 +5,44 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <div class="dashboard-container">
+        <!-- TAMBAHKAN DI ATAS DASHBOARD HEADER -->
+@if(!$isFullyActive)
+    <div class="alert-banner">
+        @if(Auth::user()->statusverifikasi == '0')
+            <div class="alert alert-warning">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <strong>Menunggu Verifikasi Admin</strong>
+                    <p>Akun Anda sedang dalam proses verifikasi. Anda belum bisa menerima pesanan sampai admin menyetujui.</p>
+                </div>
+            </div>
+        @elseif(Auth::user()->statusverifikasi == '2')
+            <div class="alert alert-danger">
+                <i class="fas fa-ban"></i>
+                <div>
+                    <strong>Akun Diblokir</strong>
+                    <p>Akun Anda telah diblokir oleh admin. Silakan hubungi admin untuk informasi lebih lanjut.</p>
+                </div>
+            </div>
+        @elseif($tukangData->statuseditprofil != '1')
+            <div class="alert alert-info">
+                <i class="fas fa-user-edit"></i>
+                <div>
+                    <strong>Lengkapi Profil Anda</strong>
+                    <p>Silakan lengkapi profil dan atur lokasi Anda di menu <a href="{{ url('/pengaturan-akun') }}">Pengaturan Akun</a>.</p>
+                </div>
+            </div>
+        @elseif($tukangData->statusjasakeahlian != '1')
+            <div class="alert alert-info">
+                <i class="fas fa-tools"></i>
+                <div>
+                    <strong>Lengkapi Pengaturan Jasa</strong>
+                    <p>Silakan lengkapi jasa Anda di menu <a href="{{ url('/pengaturan-jasa-keahlian') }}">Pengaturan Jasa & Keahlian</a>.</p>
+                </div>
+            </div>
+        @endif
+    </div>
+@endif
         {{-- Dashboard Header --}}
         <div class="dashboard-header">
             <div class="header-content">
@@ -66,18 +104,46 @@
                             </div>
                         </div>
 
-                        <div class="profile-stat-item">
-                            <div class="stat-icon-sm">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div>
-                                <span class="stat-label-sm">Status</span>
-                                <span
-                                    class="stat-value-sm {{ $tukangData->statusjasakeahlian == '1' ? 'status-active' : 'status-inactive' }}">
-                                    {{ $tukangData->statusjasakeahlian == '1' ? 'Aktif' : 'Nonaktif' }}
-                                </span>
-                            </div>
-                        </div>
+                            <div class="profile-stat-item">
+        <div class="stat-icon-sm">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div>
+            <span class="stat-label-sm">Status</span>
+            
+            @if($isFullyActive)
+                <!-- Status: AKTIF PENUH -->
+                <span class="stat-value-sm status-active">
+                    <i class="fas fa-check-circle"></i> Aktif
+                </span>
+            @elseif(Auth::user()->statusverifikasi == '0')
+                <!-- Status: MENUNGGU VERIFIKASI ADMIN -->
+                <span class="stat-value-sm status-pending">
+                    <i class="fas fa-hourglass-half"></i> Menunggu Verifikasi
+                </span>
+            @elseif(Auth::user()->statusverifikasi == '2')
+                <!-- Status: DIBLOKIR -->
+                <span class="stat-value-sm status-blocked">
+                    <i class="fas fa-ban"></i> Diblokir
+                </span>
+            @elseif($tukangData->statuseditprofil != '1')
+                <!-- Status: BELUM ISI PROFIL -->
+                <span class="stat-value-sm status-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Lengkapi Profil
+                </span>
+            @elseif($tukangData->statusjasakeahlian != '1')
+                <!-- Status: BELUM ISI JASA -->
+                <span class="stat-value-sm status-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Lengkapi Jasa
+                </span>
+            @else
+                <!-- Status: NONAKTIF -->
+                <span class="stat-value-sm status-inactive">
+                    <i class="fas fa-times-circle"></i> Nonaktif
+                </span>
+            @endif
+        </div>
+    </div>
                     </div>
 
                     <div class="profile-description">
@@ -253,6 +319,80 @@
     </div>
 
     <style>
+            .alert-banner {
+        margin-bottom: var(--space-6);
+    }
+    
+    .alert {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-4);
+        padding: var(--space-5);
+        border-radius: var(--radius-xl);
+        border: 1px solid;
+        margin-bottom: var(--space-4);
+    }
+    
+    .alert i {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+    
+    .alert strong {
+        display: block;
+        margin-bottom: var(--space-2);
+        font-size: 1.1rem;
+    }
+    
+    .alert p {
+        margin: 0;
+        line-height: 1.5;
+    }
+    
+    .alert a {
+        color: inherit;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+    
+    .alert-warning {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: #f59e0b;
+        color: #f59e0b;
+    }
+    
+    .alert-danger {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+    
+    .alert-info {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+    .status-active {
+        color: #10b981; /* Hijau */
+    }
+    
+    .status-inactive {
+        color: #ef4444; /* Merah */
+    }
+    
+    .status-pending {
+        color: #f59e0b; /* Orange */
+    }
+    
+    .status-blocked {
+        color: #dc2626; /* Merah Tua */
+    }
+    
+    .status-warning {
+        color: #f59e0b; /* Orange */
+    }
+   
         /* Dashboard Container */
         .dashboard-container {
             max-width: 1400px;

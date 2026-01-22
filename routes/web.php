@@ -357,9 +357,36 @@ Route::middleware(['auth'])->group(function () {
 	Route::get('pengaturanakun', function () {
 		return redirect()->to('pengaturan-akun');
 	});
-	Route::post('pengaturan-akun', function (Request $request) {
-		$users = \App\User::find(Auth::user()->id);
-
+Route::post('pengaturan-akun', function (Request $request) {
+	
+    // ✅ VALIDASI NOMOR HP & REKENING (yang sudah ada)
+    $request->validate([
+        'nomorhandphone' => 'required|regex:/^[0-9+]+$/|min:10|max:15',
+        'nomorrekening' => 'nullable|regex:/^[0-9]+$/|min:8|max:20',
+		'fotoprofil' => 'nullable|image|mimes:jpeg,jpg,png|max:2048',
+    ], [
+        'nomorhandphone.required' => 'Nomor handphone wajib diisi',
+        'nomorhandphone.regex' => 'Nomor handphone hanya boleh berisi angka',
+        'nomorhandphone.min' => 'Nomor handphone minimal 10 digit',
+        'nomorhandphone.max' => 'Nomor handphone maksimal 15 digit',
+        'nomorrekening.regex' => 'Nomor rekening hanya boleh berisi angka',
+        'nomorrekening.min' => 'Nomor rekening minimal 8 digit',
+        'nomorrekening.max' => 'Nomor rekening maksimal 20 digit',
+    ]);
+    
+    // ✅ TAMBAHKAN INI - VALIDASI FOTO PROFIL
+    if ($request->hasFile('fotoprofil')) {
+        $request->validate([
+            'fotoprofil' => 'required|image|mimes:jpeg,jpg,png|max:2048'
+        ], [
+            'fotoprofil.image' => 'File harus berupa gambar',
+            'fotoprofil.mimes' => 'Format file harus JPG atau PNG',
+            'fotoprofil.max' => 'Ukuran file maksimal 2MB'
+        ]);
+    }
+    // ====================================================================
+    
+    $users = \App\User::find(Auth::user()->id);
 		if (Auth::user()->statuspengguna == '2') {
 			$tukang = \App\Tukang::where('id', Auth::user()->id)->first();
 			if (!$tukang) {
@@ -383,13 +410,24 @@ Route::middleware(['auth'])->group(function () {
 			} else {
 				$tukang->namatukang = $request->input('name');
 			}
+
 			$tukang->statuseditprofil = '1';
-			if ($request->hasFile('fotoprofil')) {
-				$fotoprofil = 'fotoprofil' . Auth::user()->id . '.jpg';
-				$request->file('fotoprofil')->move('images/fotoprofil', $fotoprofil);
-				$users->fotoprofil = $fotoprofil;
-			}
-			$tukang->save();
+			        if ($request->hasFile('fotoprofil')) {
+            // Hapus foto lama jika bukan default
+            if ($users->fotoprofil && $users->fotoprofil !== 'nopicture.jpg') {
+                $oldFile = public_path('images/fotoprofil/' . $users->fotoprofil);
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+            
+            // Upload dengan nama konsisten: fotoprofil{userId}.jpg
+            $fotoprofil = 'fotoprofil' . Auth::user()->id . '.jpg';
+            $request->file('fotoprofil')->move('images/fotoprofil', $fotoprofil);
+            $users->fotoprofil = $fotoprofil;
+        }
+        
+        $tukang->save();
 		} else if (Auth::user()->statuspengguna == '1') {
 			$pelanggan = \App\Pelanggan::where('id', Auth::user()->id)->first();
 			if ($pelanggan) {
@@ -502,7 +540,8 @@ Route::middleware(['auth'])->group(function () {
 			->join('users', 'users.id', '=', 'tukang.id')
 			->join('kategoritukang', 'kategoritukang.id_kategoritukang', '=', 'tukang.id_kategoritukang')
 			->where('statuseditprofil', '1')
-			->where('statusjasakeahlian', '1');
+			->where('statusjasakeahlian', '1')
+			->where('users.statusverifikasi', '1'); // ✅ TAMBAHKAN INI UTK VERIFIKASI TUKANG AKTIF
 
 		// FILTER KATEGORI
 		if ($kategori != '' && $kategori != 'all') {
@@ -655,108 +694,142 @@ Route::middleware(['auth'])->group(function () {
 		$alamatpelanggan = \App\AlamatPelanggan::where('id_pelanggan', '=', Auth::user()->id_pelanggan)->get();
 		return view('detailtukanglokasi')->with(['idtukang' => $idtukang, 'tukang' => $tukang, 'jasatersediaharian' => $jasatersediaharian, 'jasatersediaborongan' => $jasatersediaborongan, 'alamatpelanggan' => $alamatpelanggan]);
 	});
-	Route::post('cari-tukang/{idtukang}/pesan', function ($idtukang, Request $request) {
-		function quickRandom($length)
-		{
-			$pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-			return substr(str_shuffle(str_repeat($pool, 5)), 0, $length);
-		}
-		if ($request->input('jenis') == "0") {
-			$inputJasa = $request->input('jenispemesanan');
-		} else {
-			$inputJasa = $request->input('jenispemesanan2');
-		}
 
-		// Validate that jasa input is not empty
-		if (empty($inputJasa) || !str_contains($inputJasa, ',')) {
-			return redirect()->to('cari-tukang' . '/' . $idtukang . '/rincian-biaya')->with('message_failed', 'Tukang ini belum menyediakan jasa. Silakan pilih tukang lain.');
-		}
+Route::post('cari-tukang/{idtukang}/pesan', function ($idtukang, Request $request) {
+    function quickRandom($length) {
+        $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        return substr(str_shuffle(str_repeat($pool, 5)), 0, $length);
+    }
+    
+    // Fungsi haversine untuk hitung jarak
+    function haversineGreatCircleDistance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000) {
+        $latFrom = deg2rad($latitudeFrom);
+        $lonFrom = deg2rad($longitudeFrom);
+        $latTo = deg2rad($latitudeTo);
+        $lonTo = deg2rad($longitudeTo);
+        $latDelta = $latTo - $latFrom;
+        $lonDelta = $lonTo - $lonFrom;
+        $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) + cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+        return $angle * $earthRadius;
+    }
+    
+    if ($request->input('jenis') == "0") {
+        $inputJasa = $request->input('jenispemesanan');
+    } else {
+        $inputJasa = $request->input('jenispemesanan2');
+    }
 
-		$hasilpotonganjp = explode(",", $inputJasa);
+    if (empty($inputJasa) || !str_contains($inputJasa, ',')) {
+        return redirect()->to('cari-tukang/' . $idtukang . '/rincian-biaya')
+            ->with('message_failed', 'Tukang ini belum menyediakan jasa. Silakan pilih tukang lain.');
+    }
 
-		// Additional validation to ensure array has required keys
-		if (!isset($hasilpotonganjp[0]) || !isset($hasilpotonganjp[1])) {
-			return redirect()->to('cari-tukang' . '/' . $idtukang . '/rincian-biaya')->with('message_failed', 'Data jasa tidak valid. Silakan pilih jasa yang tersedia.');
-		}
+    $hasilpotonganjp = explode(",", $inputJasa);
 
-		if (Auth::user()->saldo < $hasilpotonganjp[1])
-			return redirect()->to('cari-tukang' . '/' . $idtukang . '/rincian-biaya')->with('message_failed', 'Saldo Tidak Mencukupi');
-		else {
-			// Find or create pelanggan record if not linked
-			$pelanggan = \App\Pelanggan::where('id', Auth::user()->id)->first();
-			if (!$pelanggan) {
-				$pelanggan = new \App\Pelanggan;
-				$pelanggan->id = Auth::user()->id;
-				$pelanggan->namapelanggan = Auth::user()->namaLengkap ?? 'User';
-				$pelanggan->save();
+    if (!isset($hasilpotonganjp[0]) || !isset($hasilpotonganjp[1])) {
+        return redirect()->to('cari-tukang/' . $idtukang . '/rincian-biaya')
+            ->with('message_failed', 'Data jasa tidak valid. Silakan pilih jasa yang tersedia.');
+    }
 
-				// Update user's id_pelanggan
-				$userUpdate = \App\User::find(Auth::user()->id);
-				$userUpdate->id_pelanggan = $pelanggan->id_pelanggan;
-				$userUpdate->save();
-			}
+    if (Auth::user()->saldo < $hasilpotonganjp[1])
+        return redirect()->to('cari-tukang/' . $idtukang . '/rincian-biaya')
+            ->with('message_failed', 'Saldo Tidak Mencukupi');
+    else {
+        $pelanggan = \App\Pelanggan::where('id', Auth::user()->id)->first();
+        if (!$pelanggan) {
+            $pelanggan = new \App\Pelanggan;
+            $pelanggan->id = Auth::user()->id;
+            $pelanggan->namapelanggan = Auth::user()->namaLengkap ?? 'User';
+            $pelanggan->save();
 
-			$pesan = new \App\Pemesanan;
-			$tukang = \App\Tukang::find($idtukang);
-			$pesan->id_tukang = $idtukang;
-			$pesan->id_pelanggan = $pelanggan->id_pelanggan;
-			$pesan->id_kategoritukang = $tukang->id_kategoritukang;
-			$pesan->id_jenispemesanan = $hasilpotonganjp[0];
-			$pesan->biayajasa = $hasilpotonganjp[1];
-			$pesan->nomorpemesanan = 'NP' . quickRandom(8);
-			$pesan->tanggalbekerja = $request->input('tanggalbekerja');
-			if ($request->input('jenis') != "0")
-				$pesan->tanggalselesai = $request->input('tanggalselesai');
-			else
-				$pesan->tanggalselesai = $request->input('tanggalbekerja'); // For Harian, set to same day
-			$pesan->catatan = $request->input('catatan');
-			$pesan->kategoripemesanan = $request->input('jenis');
-			if ($request->hasFile('foto1')) {
-				$fotoproduk1 = 'fotopesan1' . date('YmdHis') . '.jpg';
-				$request->file('foto1')->move('images/fotoproduk', $fotoproduk1);
-				$pesan->fotopemesanan1 = $fotoproduk1;
-			}
-			if ($request->hasFile('foto2')) {
-				$fotoproduk2 = 'fotopesan2' . date('YmdHis') . '.jpg';
-				$request->file('foto2')->move('images/fotoproduk', $fotoproduk2);
-				$pesan->fotopemesanan2 = $fotoproduk2;
-			}
-			$hasilpotongan = explode(",", $request->input('alamatpemesanan'));
-			// Validate that alamatpemesanan has all required parts (alamat, latitude, longitude)
-			if (count($hasilpotongan) < 3 || empty($hasilpotongan[0]) || empty($hasilpotongan[1]) || empty($hasilpotongan[2])) {
-				return redirect()->to('cari-tukang' . '/' . $idtukang . '/rincian-biaya')->with('message_failed', 'Silakan pilih alamat pengerjaan terlebih dahulu. Jika belum ada, tambahkan alamat di menu Tambah Alamat.');
-			}
-			$pesan->alamatpemesanan = $hasilpotongan[0];
-			$pesan->latitudepemesanan = $hasilpotongan[1];
-			$pesan->longtitudepemesanan = $hasilpotongan[2];
-			$pesan->statuspemesanan = "0";
-			$pesan->statusubahharga = "0";
-			$pesan->save();
-			$users = \App\User::find(Auth::user()->id);
-			$users->saldo -= $hasilpotonganjp[1];
-			$users->save();
+            $userUpdate = \App\User::find(Auth::user()->id);
+            $userUpdate->id_pelanggan = $pelanggan->id_pelanggan;
+            $userUpdate->save();
+        }
 
-			// Create transaction history record for the payment
-			$riwayat = new \App\RiwayatTransaksi;
-			$riwayat->kode = 'PJ' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 6);
-			$riwayat->id = Auth::user()->id;
-			$riwayat->jumlahsaldo = $hasilpotonganjp[1];
-			$riwayat->jenistransaksi = "Pembayaran Jasa";
-			$riwayat->statustransaksi = "1"; // Auto-approved since it's a direct payment
-			$riwayat->rekening = $pesan->nomorpemesanan; // Store order number as reference
-			$riwayat->namarekening = $tukang->namatukang ?? 'Tukang'; // Tukang name
-			$riwayat->save();
+        $pesan = new \App\Pemesanan;
+        $tukang = \App\Tukang::find($idtukang);
+        $pesan->id_tukang = $idtukang;
+        $pesan->id_pelanggan = $pelanggan->id_pelanggan;
+        $pesan->id_kategoritukang = $tukang->id_kategoritukang;
+        $pesan->id_jenispemesanan = $hasilpotonganjp[0];
+        $pesan->biayajasa = $hasilpotonganjp[1];
+        $pesan->nomorpemesanan = 'NP' . quickRandom(8);
+        $pesan->tanggalbekerja = $request->input('tanggalbekerja');
+        if ($request->input('jenis') != "0")
+            $pesan->tanggalselesai = $request->input('tanggalselesai');
+        else
+            $pesan->tanggalselesai = $request->input('tanggalbekerja');
+        $pesan->catatan = $request->input('catatan');
+        $pesan->kategoripemesanan = $request->input('jenis');
+        
+        if ($request->hasFile('foto1')) {
+            $fotoproduk1 = 'fotopesan1' . date('YmdHis') . '.jpg';
+            $request->file('foto1')->move('images/fotoproduk', $fotoproduk1);
+            $pesan->fotopemesanan1 = $fotoproduk1;
+        }
+        if ($request->hasFile('foto2')) {
+            $fotoproduk2 = 'fotopesan2' . date('YmdHis') . '.jpg';
+            $request->file('foto2')->move('images/fotoproduk', $fotoproduk2);
+            $pesan->fotopemesanan2 = $fotoproduk2;
+        }
+        
+        $hasilpotongan = explode(",", $request->input('alamatpemesanan'));
+        if (count($hasilpotongan) < 3 || empty($hasilpotongan[0]) || empty($hasilpotongan[1]) || empty($hasilpotongan[2])) {
+            return redirect()->to('cari-tukang/' . $idtukang . '/rincian-biaya')
+                ->with('message_failed', 'Silakan pilih alamat pengerjaan terlebih dahulu. Jika belum ada, tambahkan alamat di menu Tambah Alamat.');
+        }
+        $pesan->alamatpemesanan = $hasilpotongan[0];
+        $pesan->latitudepemesanan = $hasilpotongan[1];
+        $pesan->longtitudepemesanan = $hasilpotongan[2];
+        
+        // ✅ TAMBAHAN: SIMPAN SNAPSHOT JARAK & HARGA
+        $hargaJarakRecord = \App\HargaJarak::find("1");
+        $hargaPerKmSaatIni = $hargaJarakRecord ? $hargaJarakRecord->hargajarak : 5000;
+        
+        $jarakMeter = haversineGreatCircleDistance(
+            3.587971813394123, 
+            98.69062542915344, 
+            $pesan->latitudepemesanan, 
+            $pesan->longtitudepemesanan
+        );
+        $jarakKm = $jarakMeter / 1000;
+        
+        $pesan->jarak_km = $jarakKm;
+        $pesan->harga_per_km = $hargaPerKmSaatIni;
+        $pesan->biaya_jarak = round($jarakKm * $hargaPerKmSaatIni);
+        // ✅ END TAMBAHAN
+        
+        $pesan->statuspemesanan = "0";
+        $pesan->statusubahharga = "0";
+        $pesan->save();
+        
+        $users = \App\User::find(Auth::user()->id);
+        $users->saldo -= $hasilpotonganjp[1];
+        $users->save();
 
-			$notifikasi = new \App\Notifikasi;
-			$notifikasi->kepada = $tukang->id; // Use tukang's user id, not id_tukang
-			$notifikasi->isinotifikasi = "telah melakukan pemesanan terhadap jasa anda";
-			$notifikasi->statusnotifikasi = '0';
-			$notifikasi->dari = Auth::user()->id;
-			$notifikasi->jenisnotifikasi = "permintaanpesanan";
-			$notifikasi->save();
-			return redirect()->to('cari-tukang' . '/' . $idtukang . '/rincian-biaya')->with('message_success', 'Pemesanan Penyedia Jasa Renovasi Berhasil');
-		}
-	});
+        $riwayat = new \App\RiwayatTransaksi;
+        $riwayat->kode = 'PJ' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 6);
+        $riwayat->id = Auth::user()->id;
+        $riwayat->jumlahsaldo = $hasilpotonganjp[1];
+        $riwayat->jenistransaksi = "Pembayaran Jasa";
+        $riwayat->statustransaksi = "1";
+        $riwayat->rekening = $pesan->nomorpemesanan;
+        $riwayat->namarekening = $tukang->namatukang ?? 'Tukang';
+        $riwayat->save();
+
+        $notifikasi = new \App\Notifikasi;
+        $notifikasi->kepada = $tukang->id;
+        $notifikasi->isinotifikasi = "telah melakukan pemesanan terhadap jasa anda";
+        $notifikasi->statusnotifikasi = '0';
+        $notifikasi->dari = Auth::user()->id;
+        $notifikasi->jenisnotifikasi = "permintaanpesanan";
+        $notifikasi->save();
+        
+        return redirect()->to('cari-tukang/' . $idtukang . '/rincian-biaya')
+            ->with('message_success', 'Pemesanan Penyedia Jasa Renovasi Berhasil');
+    }
+});
 
 	Route::get('tambah-alamat', function (Request $request) {
 		// Find pelanggan via the 'id' column (which links to users.id)
@@ -1196,13 +1269,54 @@ Route::middleware(['auth'])->group(function () {
 			]);
 
 		} elseif (Auth::user()->statuspengguna == '0') {
-			$hargajarak = \App\HargaJarak::find("1");
-			$value = \App\Pemesanan::join('jenispemesanan', 'jenispemesanan.id_jenispemesanan', '=', 'pemesanan.id_jenispemesanan')->join('kategoritukang', 'kategoritukang.id_kategoritukang', '=', 'pemesanan.id_kategoritukang')->join('pelanggan', 'pelanggan.id_pelanggan', '=', 'pemesanan.id_pelanggan')->join('users', 'users.id', '=', 'pelanggan.id')->find($idpemesanan);
-			$pemesananbahan = \App\PemesananBahanMaterial::join('bahanmaterial', 'bahanmaterial.id_bahanmaterial', '=', 'pemesananbahanmaterial.id_bahanmaterial')->where('id_pemesanan', '=', $idpemesanan)->get();
-			$jarak = haversineGreatCircleDistance(3.587971813394123, 98.69062542915344, $value->latitudepemesanan, $value->longtitudepemesanan) / 1000;
-			$tukang = \App\Tukang::join('users', 'users.id', '=', 'tukang.id')->join('kategoritukang', 'kategoritukang.id_kategoritukang', '=', 'tukang.id_kategoritukang')->find($value->id_tukang);
-			return view('admindetailriwayatpemesanan')->with(['value' => $value, 'jarak' => $jarak, 'pemesananbahan' => $pemesananbahan, 'idpemesanan' => $idpemesanan, 'totalkeranjang' => $totalkeranjang, 'statuspemesanan' => $statuspemesanan, 'tukang' => $tukang, 'hargajarak' => $hargajarak, 'laporanprogress' => $laporanprogress]);
-		}
+    $hargajarak = \App\HargaJarak::find("1");
+    
+    $value = \App\Pemesanan::join('jenispemesanan', 'jenispemesanan.id_jenispemesanan', '=', 'pemesanan.id_jenispemesanan')
+        ->join('kategoritukang', 'kategoritukang.id_kategoritukang', '=', 'pemesanan.id_kategoritukang')
+        ->join('pelanggan', 'pelanggan.id_pelanggan', '=', 'pemesanan.id_pelanggan')
+        ->join('users', 'users.id', '=', 'pelanggan.id')
+        ->find($idpemesanan);
+    
+    $pemesananbahan = \App\PemesananBahanMaterial::join('bahanmaterial', 'bahanmaterial.id_bahanmaterial', '=', 'pemesananbahanmaterial.id_bahanmaterial')
+        ->where('id_pemesanan', '=', $idpemesanan)
+        ->get();
+    
+    // Gunakan data snapshot dari pemesanan
+    if (!empty($value->jarak_km) && !empty($value->harga_per_km)) {
+        // Pemesanan baru dengan snapshot
+        $jarak = $value->jarak_km;
+        $hargaPerKm = $value->harga_per_km;
+        $biayaJarak = $value->biaya_jarak;
+    } else {
+        // Pemesanan lama tanpa snapshot
+        $jarak = haversineGreatCircleDistance(
+            3.587971813394123, 
+            98.69062542915344, 
+            $value->latitudepemesanan, 
+            $value->longtitudepemesanan
+        ) / 1000;
+        $hargaPerKm = $hargajarak->hargajarak;
+        $biayaJarak = round($jarak * $hargaPerKm);
+    }
+    
+    $tukang = \App\Tukang::join('users', 'users.id', '=', 'tukang.id')
+        ->join('kategoritukang', 'kategoritukang.id_kategoritukang', '=', 'tukang.id_kategoritukang')
+        ->find($value->id_tukang);
+    
+    return view('admindetailriwayatpemesanan')->with([
+        'value' => $value, 
+        'jarak' => $jarak, 
+        'hargaPerKm' => $hargaPerKm,
+        'biayaJarak' => $biayaJarak,
+        'pemesananbahan' => $pemesananbahan, 
+        'idpemesanan' => $idpemesanan, 
+        'totalkeranjang' => $totalkeranjang, 
+        'statuspemesanan' => $statuspemesanan, 
+        'tukang' => $tukang, 
+        'hargajarak' => $hargajarak, 
+        'laporanprogress' => $laporanprogress
+    ]);
+}
 	});
 	Route::post('riwayatpemesanan/{idpemesanan}/{idbahanmaterial}/masukkeranjang', function ($idpemesanan, $idbahanmaterial, Request $request) {
 		$pemesanan = \App\Pemesanan::find($idpemesanan);
@@ -1221,40 +1335,71 @@ Route::middleware(['auth'])->group(function () {
 		$pemesananbahan->delete();
 		return redirect()->to('riwayatpemesanan' . '/' . $idpemesanan . '?kategori=all' . '&katakunci=')->with('message_success', 'Item Bahan Material Berhasil Dihapus Dari Keranjang');
 	});
-	Route::post('riwayatpemesanan/{idpemesanan}/prosespembelian', function ($idpemesanan, Request $request) {
-		if (Auth::user()->saldo < $request->input('totalkeranjang') + $request->input('biayajarak')) {
-			$pemesanan = \App\Pemesanan::find($idpemesanan);
-			return redirect()->to('riwayatpemesanan' . '/' . $idpemesanan . '?kategori=' . $pemesanan->id_kategoritukang . '&katakunci=')->with('message_failed', 'Saldo Tidak Mencukupi Untuk Melakukan Pembelian Bahan Material');
-		} else {
-			$pemesananbahan = \App\PemesananBahanMaterial::where('id_pemesanan', '=', $idpemesanan)->get();
-			for ($i = 0; $i < count($pemesananbahan); $i++) {
-				$pemesananfind = \App\PemesananBahanMaterial::find($pemesananbahan[$i]['id_pemesananbahanmaterial']);
-				$pemesananfind->statuspembelian = "1";
-				$pemesananfind->save();
-			}
-			$pemesanan = \App\Pemesanan::find($idpemesanan);
-			$tukang = \App\Tukang::find($pemesanan->id_tukang);
-			$pemesanan->statuspemesanan = '3';
-			$pemesanan->save();
-			$pelanggan = \App\Pelanggan::find($pemesanan->id_pelanggan);
-			$users = \App\User::find($pelanggan->id);
-			$users->saldo -= $request->input('totalkeranjang') + $request->input('biayajarak');
-			$users->save();
-			if ($pemesanan->statuspemesanan == "1") {
-				$notifikasi = new \App\Notifikasi;
-				$notifikasi->kepada = $tukang->id;
-				$notifikasi->isinotifikasi = "telah menyelesaikan pembelian bahan material dengan nomor pemesanan" . $pemesanan->nomorpemesanan . ". Silahkan Selesaikan Pekerjaan Anda";
-				$notifikasi->statusnotifikasi = '0';
-				$notifikasi->dari = Auth::user()->id;
-				$notifikasi->jenisnotifikasi = "riwayatpemesanan/" . $pemesanan->id_pemesanan;
-				$notifikasi->save();
-			}
-			if ($request->input('totalkeranjang') == '0')
-				return redirect()->to('riwayatpemesanan' . '/' . $idpemesanan . '?kategori=' . $pemesanan->id_kategoritukang . '&katakunci=')->with('message_success', 'Status Penyewaan Telah Berubah Tanpa Pembelian Bahan Material');
-			else
-				return redirect()->to('riwayatpemesanan' . '/' . $idpemesanan . '?kategori=all' . '&katakunci=')->with('message_success', 'Pembelian Bahan Material Berhasil Dilakukan, Tim Kami Akan Segera Mengirimkannya Ke Alamat Pengerjaan');
-		}
-	});
+Route::post('riwayatpemesanan/{idpemesanan}/prosespembelian', function ($idpemesanan, Request $request) {
+    $pemesanan = \App\Pemesanan::find($idpemesanan);
+    
+    // Hitung total belanja (material + ongkir)
+    $totalBelanja = $request->input('totalkeranjang') + $request->input('biayajarak');
+    
+    // ✅ CEK SALDO (penting!)
+    if (Auth::user()->saldo < $totalBelanja) {
+        return redirect()->to('riwayatpemesanan/' . $idpemesanan . '?kategori=' . $pemesanan->id_kategoritukang . '&katakunci=')
+            ->with('message_failed', 'Saldo Tidak Mencukupi Untuk Melakukan Pembelian Bahan Material');
+    } else {
+        // Update status bahan material menjadi dibeli
+        $pemesananbahan = \App\PemesananBahanMaterial::where('id_pemesanan', '=', $idpemesanan)->get();
+        foreach ($pemesananbahan as $item) {
+            $pemesananfind = \App\PemesananBahanMaterial::find($item->id_pemesananbahanmaterial);
+            $pemesananfind->statuspembelian = "1";
+            $pemesananfind->save();
+        }
+        
+        $tukang = \App\Tukang::find($pemesanan->id_tukang);
+        
+        // Ubah status pemesanan ke "Dikerjakan"
+        $pemesanan->statuspemesanan = '3';
+        $pemesanan->save();
+        
+        $pelanggan = \App\Pelanggan::find($pemesanan->id_pelanggan);
+        $users = \App\User::find($pelanggan->id);
+        
+        // ✅ KURANGI SALDO (Material + Ongkir)
+        $users->saldo -= $totalBelanja;
+        $users->save();
+        
+        // ✅ CATAT RIWAYAT TRANSAKSI
+        if ($request->input('totalkeranjang') > 0) {
+            $riwayat = new \App\RiwayatTransaksi;
+            $riwayat->kode = 'BM' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 6);
+            $riwayat->id = Auth::user()->id;
+            $riwayat->jumlahsaldo = $totalBelanja; // Total bahan + ongkir
+            $riwayat->jenistransaksi = "Pembelian Bahan Material";
+            $riwayat->statustransaksi = "1"; // Auto-approved
+            $riwayat->rekening = $pemesanan->nomorpemesanan;
+            $riwayat->namarekening = "Material + Ongkir (Rp " . number_format($request->input('biayajarak'), 0, ',', '.') . ")";
+            $riwayat->save();
+        }
+        
+        // Kirim notifikasi ke tukang
+        if ($pemesanan->statuspemesanan == "1") {
+            $notifikasi = new \App\Notifikasi;
+            $notifikasi->kepada = $tukang->id;
+            $notifikasi->isinotifikasi = "telah menyelesaikan pembelian bahan material dengan nomor pemesanan " . $pemesanan->nomorpemesanan . ". Silahkan Selesaikan Pekerjaan Anda";
+            $notifikasi->statusnotifikasi = '0';
+            $notifikasi->dari = Auth::user()->id;
+            $notifikasi->jenisnotifikasi = "riwayatpemesanan/" . $pemesanan->id_pemesanan;
+            $notifikasi->save();
+        }
+        
+        if ($request->input('totalkeranjang') == '0') {
+            return redirect()->to('riwayatpemesanan/' . $idpemesanan . '?kategori=' . $pemesanan->id_kategoritukang . '&katakunci=')
+                ->with('message_success', 'Status Penyewaan Telah Berubah Tanpa Pembelian Bahan Material');
+        } else {
+            return redirect()->to('riwayatpemesanan/' . $idpemesanan . '?kategori=all&katakunci=')
+                ->with('message_success', 'Pembelian Bahan Material Berhasil Dilakukan, Tim Kami Akan Segera Mengirimkannya Ke Alamat Pengerjaan');
+        }
+    }
+});
 	Route::post('riwayatpemesanan/{idpemesanan}/selesaidikerjakan', function ($idpemesanan, Request $request) {
 		function quickRandom($length)
 		{
@@ -1708,3 +1853,4 @@ Route::get('create-test-saldo', function () {
 
 // Auth routes - handled by Laravel's auth system
 require __DIR__ . '/auth.php';
+

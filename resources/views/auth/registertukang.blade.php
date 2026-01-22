@@ -1064,6 +1064,110 @@
     }
 `;
         document.head.appendChild(style);
+ // ===================================
+        // VALIDASI UPLOAD FILE
+        // ===================================
+        
+        // Fungsi validasi ukuran dan tipe file
+        function validateFile(file, maxSizeMB, allowedTypes) {
+            const maxSize = maxSizeMB * 1024 * 1024; // Convert MB to bytes
+            
+            // Validasi ukuran
+            if (file.size > maxSize) {
+                showNotification(`Ukuran file terlalu besar! Maksimal ${maxSizeMB}MB`, 'error');
+                return false;
+            }
+            
+            // Validasi tipe file
+            if (!allowedTypes.includes(file.type)) {
+                const typeNames = allowedTypes.map(t => t.split('/')[1].toUpperCase()).join(', ');
+                showNotification(`Format file tidak valid! Hanya ${typeNames} yang diperbolehkan`, 'error');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Validasi untuk KTP, SIM, Profil (foto max 2MB)
+        const photoInputs = ['fotoktp', 'fotosim', 'fotoprofil'];
+        photoInputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            
+            input.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                const label = document.getElementById('label-' + inputId);
+                const fileNameEl = label.querySelector('.file-name');
+                
+                if (!validateFile(file, 2, allowedTypes)) {
+                    this.value = ''; // Reset input
+                    if (fileNameEl) fileNameEl.textContent = '';
+                    label.classList.remove('selected');
+                    return;
+                }
+                
+                // Tampilkan nama file jika valid
+                if (fileNameEl) {
+                    const fileName = file.name;
+                    fileNameEl.textContent = fileName.length > 20 ? fileName.substring(0, 17) + '...' : fileName;
+                }
+                label.classList.add('selected');
+                label.classList.remove('error');
+            });
+        });
+        
+        // Validasi untuk ZIP (Hasil Kerja max 10MB)
+        const zipInput = document.getElementById('fotohasilkerja');
+        if (zipInput) {
+            zipInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                
+                const allowedTypes = ['application/zip', 'application/x-zip-compressed', 'application/x-zip'];
+                const label = document.getElementById('label-fotohasilkerja');
+                const fileNameEl = label.querySelector('.file-name');
+                
+                // Validasi ekstensi .zip juga (karena MIME type bisa bervariasi)
+                if (!allowedTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.zip')) {
+                    showNotification('Format file tidak valid! Hanya ZIP yang diperbolehkan', 'error');
+                    this.value = '';
+                    if (fileNameEl) fileNameEl.textContent = '';
+                    label.classList.remove('selected');
+                    return;
+                }
+                
+                if (!validateFile(file, 10, allowedTypes)) {
+                    this.value = '';
+                    if (fileNameEl) fileNameEl.textContent = '';
+                    label.classList.remove('selected');
+                    return;
+                }
+                
+                // Tampilkan nama file jika valid
+                if (fileNameEl) {
+                    const fileName = file.name;
+                    fileNameEl.textContent = fileName.length > 20 ? fileName.substring(0, 17) + '...' : fileName;
+                }
+                label.classList.add('selected');
+                label.classList.remove('error');
+            });
+        }
+
+        // Update style untuk uploaded state
+        const uploadStyle = document.createElement('style');
+        uploadStyle.textContent = `
+            .upload-label.selected .file-name {
+                display: block;
+                color: var(--success);
+                font-weight: 600;
+                margin-top: 8px;
+            }
+        `;
+        document.head.appendChild(uploadStyle);
+
     </script>
 </body>
 

@@ -80,10 +80,26 @@
                                     required>
                             </div>
                             <div class="form-field">
-                                <label><i class="fas fa-phone"></i> Nomor Handphone</label>
-                                <input type="tel" name="nomorhandphone" value="{{ Auth::user()->nomorhandphone }}"
-                                    placeholder="+62 xxx xxxx xxxx">
-                            </div>
+    <label><i class="fas fa-phone"></i> Nomor Handphone</label>
+    <input type="tel" 
+           name="nomorhandphone" 
+           id="nomorhandphone"
+           value="{{ old('nomorhandphone', Auth::user()->nomorhandphone) }}"
+           placeholder="+62 xxx xxxx xxxx"
+           pattern="[0-9+]+"
+           title="Hanya angka dan tanda + yang diperbolehkan"
+           class="@error('nomorhandphone') is-invalid @enderror">
+    
+    <!-- Error dari validasi JavaScript (real-time) -->
+    <span class="error-message" id="phone-error" style="color: red; display: none;">
+        Nomor handphone hanya boleh berisi angka
+    </span>
+    
+    <!-- Error dari validasi Laravel (setelah submit) -->
+    @error('nomorhandphone')
+        <span class="error-message" style="color: red; display: block;">{{ $message }}</span>
+    @enderror
+</div>
                             <div class="form-field">
                                 <label><i class="fas fa-map-marker-alt"></i> Alamat</label>
                                 <textarea name="alamat" rows="3"
@@ -106,10 +122,26 @@
                         <div class="card-body">
                             <div class="form-row">
                                 <div class="form-field">
-                                    <label><i class="fas fa-university"></i> Nomor Rekening</label>
-                                    <input type="text" name="nomorrekening" value="{{ Auth::user()->nomorrekening }}"
-                                        placeholder="xxxx-xxxx-xxxx">
-                                </div>
+    <label><i class="fas fa-university"></i> Nomor Rekening</label>
+    <input type="text" 
+           name="nomorrekening" 
+           id="nomorrekening"
+           value="{{ old('nomorrekening', Auth::user()->nomorrekening) }}"
+           placeholder="xxxx-xxxx-xxxx"
+           pattern="[0-9]+"
+           title="Hanya angka yang diperbolehkan"
+           class="@error('nomorrekening') is-invalid @enderror">
+    
+    <!-- Error dari validasi JavaScript (real-time) -->
+    <span class="error-message" id="rekening-error" style="color: red; display: none;">
+        Nomor rekening hanya boleh berisi angka
+    </span>
+    
+    <!-- Error dari validasi Laravel (setelah submit) -->
+    @error('nomorrekening')
+        <span class="error-message" style="color: red; display: block;">{{ $message }}</span>
+    @enderror
+</div>
                                 <div class="form-field">
                                     <label><i class="fas fa-user-tag"></i> Nama Rekening</label>
                                     <input type="text" name="namarekening" value="{{ Auth::user()->namarekening }}"
@@ -143,12 +175,12 @@
                                     @endif
                                 </div>
                                 <div class="photo-info">
-                                    <label class="upload-btn">
-                                        <i class="fas fa-upload"></i> Pilih Foto
-                                        <input type="file" name="fotoprofil" accept="image/*" onchange="previewPhoto(this)">
-                                    </label>
-                                    <p>Format: JPG, PNG. Max 2MB</p>
-                                </div>
+    <label class="upload-btn">
+        <i class="fas fa-upload"></i> Pilih Foto
+        <input type="file" name="fotoprofil" accept="image/*" onchange="previewPhoto(this)">
+    </label>
+    <p>Format: JPG, PNG. Max 2MB</p>
+</div>
                             </div>
                         </div>
                     </div>
@@ -570,15 +602,33 @@
 
     <script>
         function previewPhoto(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const preview = document.getElementById('photoPreview');
-                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview" id="previewImg">`;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
+    const file = input.files[0];
+    if (!file) return;
+    
+    // ✅ Validasi tipe file
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+        alert('❌ Format file tidak valid! Hanya JPG/PNG yang diperbolehkan');
+        input.value = '';
+        return;
+    }
+    
+    // ✅ Validasi ukuran (2MB = 2 * 1024 * 1024 bytes)
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+        alert('❌ Ukuran file terlalu besar! Maksimal 2MB');
+        input.value = '';
+        return;
+    }
+    
+    // ✅ Preview jika valid
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const preview = document.getElementById('photoPreview');
+        preview.innerHTML = `<img src="${e.target.result}" alt="Preview" id="previewImg">`;
+    };
+    reader.readAsDataURL(file);
+}
 
         function initAutocomplete() {
             let map;
@@ -700,4 +750,85 @@
     <script
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVHbAYfrB3OBft96wmCAmmxYJferc_Gz0&libraries=places&callback=initAutocomplete"
         async defer></script>
+
+    <script>
+
+        function handleUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    // Validasi tipe file
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+        alert('Format file tidak valid! Hanya JPG/PNG yang diperbolehkan');
+        input.value = '';
+        return;
+    }
+    
+    // Validasi ukuran (2MB = 2 * 1024 * 1024 bytes)
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+        alert('Ukuran file terlalu besar! Maksimal 2MB');
+        input.value = '';
+        return;
+    }
+    
+    // Preview image
+    const preview = document.getElementById('uploadPreview');
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        preview.innerHTML = `
+            <div style="position:relative;display:inline-block;margin-top:10px;">
+                <img src="${e.target.result}" style="max-width:200px;border-radius:8px;border:2px solid #10b981;">
+                <button type="button" onclick="removeUpload()" 
+                    style="position:absolute;top:-8px;right:-8px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:18px;line-height:1;">
+                    ×
+                </button>
+            </div>
+        `;
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+function removeUpload() {
+    document.querySelector('input[name="buktitransfer"]').value = '';
+    document.getElementById('uploadPreview').innerHTML = '';
+}
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validasi Nomor Handphone
+        const inputNomor = document.getElementById('nomorhandphone');
+        if (inputNomor) {
+            inputNomor.addEventListener('input', function(e) {
+                const value = e.target.value;
+                const errorMsg = document.getElementById('phone-error');
+                
+                if (!/^[0-9+]*$/.test(value)) {
+                    errorMsg.style.display = 'block';
+                    e.target.value = value.replace(/[^0-9+]/g, '');
+                } else {
+                    errorMsg.style.display = 'none';
+                }
+            });
+        }
+
+        // TAMBAHKAN VALIDASI NOMOR REKENING DI SINI
+        const inputRekening = document.getElementById('nomorrekening');
+        if (inputRekening) {
+            inputRekening.addEventListener('input', function(e) {
+                const value = e.target.value;
+                const errorMsg = document.getElementById('rekening-error');
+                
+                // Hanya izinkan angka (tanpa +)
+                if (!/^[0-9]*$/.test(value)) {
+                    errorMsg.style.display = 'block';
+                    e.target.value = value.replace(/[^0-9]/g, ''); // Hapus semua selain angka
+                } else {
+                    errorMsg.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
 @endsection

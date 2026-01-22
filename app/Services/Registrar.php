@@ -79,7 +79,7 @@ class Registrar implements RegistrarContract
 
 		} else {
 
-			Session::flash('success', 'Pendaftaran Akun Berhasil Dilakukan dan Silahkan Menunggu Verifikasi Admin');
+			Session::flash('success');
 			$kode = 'TAC' . (\App\User::where('statuspengguna', '2')->count() + 1);
 			$lastrecord = \App\User::orderby('id', 'DESC')->first();
 			$count = $lastrecord->id + 1;

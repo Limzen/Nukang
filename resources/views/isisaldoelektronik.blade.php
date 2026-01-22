@@ -61,10 +61,15 @@
 
                         <div class="form-row">
                             <div class="form-field">
-                                <label><i class="fas fa-university"></i> Nomor Rekening Anda</label>
-                                <input type="text" name="nomorrekeninganda" value="{{ Auth::user()->nomorrekening }}"
-                                    required>
-                            </div>
+    <label><i class="fas fa-university"></i> Nomor Rekening Anda</label>
+    <input type="text" name="nomorrekeninganda" 
+           value="{{ Auth::user()->nomorrekening }}" required>
+
+    <!-- Pesan error -->
+    <small id="rekeningError" style="color:red; display:none;">
+        Nomor rekening hanya boleh berisi angka
+    </small>
+</div>
                             <div class="form-field">
                                 <label><i class="fas fa-user"></i> Nama Pemilik</label>
                                 <input type="text" name="namapemilik" value="{{ Auth::user()->namapelanggan }}" required>
@@ -196,16 +201,16 @@
                         </div>
 
                         <div class="form-field">
-                            <label><i class="fas fa-image"></i> Upload Bukti Transfer</label>
-                            <div class="upload-area" id="uploadArea">
-                                <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                                <p>Klik atau drop file disini</p>
-                                <span>JPG, PNG max 2MB</span>
-                                <input type="file" name="buktitransfer" accept="image/*" required
-                                    onchange="handleUpload(this)">
-                            </div>
-                            <div class="upload-preview" id="uploadPreview"></div>
-                        </div>
+    <label><i class="fas fa-image"></i> Upload Bukti Transfer</label>
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+        <p>Klik atau drop file disini</p>
+        <span>JPG, PNG max 2MB</span>
+        <input type="file" name="buktitransfer" accept="image/*" required
+            onchange="handleUpload(this)">
+    </div>
+    <div class="upload-preview" id="uploadPreview"></div>
+</div>
 
                         <button type="submit" class="btn btn-primary btn-lg btn-block">
                             <i class="fas fa-paper-plane"></i> Kirim Permintaan Top Up
@@ -1131,32 +1136,100 @@
     </style>
 
     <script>
-        function setAmount(amount) {
-            document.querySelector('input[name="jumlahsaldouser"]').value = amount;
-        }
+    // Set quick amount
+    function setAmount(amount) {
+        document.querySelector('input[name="jumlahsaldouser"]').value = amount;
+    }
 
-        function handleUpload(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('uploadPreview').innerHTML =
-                        `<img src="${e.target.result}" alt="Preview">`;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
+    // Handle file upload dengan validasi
+    function handleUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        // Validasi tipe file
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Format file tidak valid! Hanya JPG/PNG yang diperbolehkan');
+            input.value = '';
+            return;
         }
+        
+        // Validasi ukuran (2MB = 2 * 1024 * 1024 bytes)
+        const maxSize = 2 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('Ukuran file terlalu besar! Maksimal 2MB');
+            input.value = '';
+            return;
+        }
+        
+        // Preview image
+        const preview = document.getElementById('uploadPreview');
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <div style="position:relative;display:inline-block;margin-top:10px;">
+                    <img src="${e.target.result}" style="max-width:200px;border-radius:8px;border:2px solid #10b981;">
+                    <button type="button" onclick="removeUpload()" 
+                        style="position:absolute;top:-8px;right:-8px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:18px;line-height:1;">
+                        ×
+                    </button>
+                </div>
+            `;
+        };
+        
+        reader.readAsDataURL(file);
+    }
 
-        function copyAccount(accountNumber, button) {
-            // Copy to clipboard
-            navigator.clipboard.writeText(accountNumber).then(() => {
-                // Visual feedback
-                button.classList.add('copied');
-                setTimeout(() => {
-                    button.classList.remove('copied');
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-            });
-        }
+    // Remove upload preview
+    function removeUpload() {
+        document.querySelector('input[name="buktitransfer"]').value = '';
+        document.getElementById('uploadPreview').innerHTML = '';
+    }
+
+    // Copy account number
+    function copyAccount(accountNumber, button) {
+        navigator.clipboard.writeText(accountNumber).then(() => {
+            button.classList.add('copied');
+            setTimeout(() => {
+                button.classList.remove('copied');
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+        });
+    }
+
+    // ===================================
+    // VALIDASI INPUT NOMOR REKENING
+    // ===================================
+    document.addEventListener('DOMContentLoaded', function() {
+    const nomorRekeningInput = document.querySelector('input[name="nomorrekeninganda"]');
+    const errorMessage = document.getElementById('rekeningError');
+
+    if (nomorRekeningInput) {
+
+        nomorRekeningInput.addEventListener('input', function () {
+            const originalValue = this.value;
+            const filteredValue = originalValue.replace(/[^0-9]/g, '');
+
+            errorMessage.style.display = 
+                originalValue !== filteredValue ? 'block' : 'none';
+
+            this.value = filteredValue;
+        });
+
+        nomorRekeningInput.addEventListener('paste', function () {
+            setTimeout(() => {
+                const filteredValue = this.value.replace(/[^0-9]/g, '');
+
+                errorMessage.style.display = 
+                    this.value !== filteredValue ? 'block' : 'none';
+
+                this.value = filteredValue;
+            }, 0);
+        });
+    }
+});
+
     </script>
 @endsection

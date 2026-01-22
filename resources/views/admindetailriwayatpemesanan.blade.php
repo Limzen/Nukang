@@ -122,12 +122,12 @@
                 </div>
 
                 <div class="detail-item">
-                    <span class="label"><i class="fas fa-truck"></i> Biaya Pengantaran</span>
-                    <span class="value">
-                        {{ $jarak }} KM × Rp {{ number_format($hargajarak->hargajarak, 2) }} 
-                        = <span class="price">Rp {{ number_format($jarak * $hargajarak->hargajarak, 2) }}</span>
-                    </span>
-                </div>
+    <span class="label"><i class="fas fa-truck"></i> Biaya Pengantaran</span>
+    <span class="value">
+        {{ number_format($jarak, 2) }} KM × Rp {{ number_format($hargaPerKm, 2) }} 
+        = <span class="price">Rp {{ number_format($biayaJarak, 2) }}</span>
+    </span>
+</div>
 
                 @if($value->catatan)
                 <div class="detail-item full-width">

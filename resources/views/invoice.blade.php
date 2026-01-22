@@ -297,10 +297,48 @@
                     <span class="detail-label">Biaya Jasa</span>
                     <span class="detail-value">Rp {{ number_format($value->biayajasa, 0, ',', '.') }}</span>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Biaya Pengantaran ({{ $jarak }} Km)</span>
-                    <span class="detail-value">Rp {{ number_format($jarak * $hargajarak->hargajarak, 0, ',', '.') }}</span>
-                </div>
+                @if(isset($value->biaya_jarak) && $value->biaya_jarak > 0)
+<div class="detail-row">
+    <span class="detail-label">Biaya Jasa</span>
+    <span class="detail-value">Rp {{ number_format($value->biayajasa, 0, ',', '.') }}</span>
+</div>
+
+{{-- ✅ Biaya Pengantaran HANYA jika ada bahan material --}}
+@if(count($pemesananbahan) > 0 && isset($value->biaya_jarak) && $value->biaya_jarak > 0)
+<div class="detail-row">
+    <span class="detail-label">
+        Biaya Pengantaran 
+        ({{ number_format($value->jarak_km, 1) }} Km × Rp {{ number_format($value->harga_per_km, 0, ',', '.') }})
+    </span>
+    <span class="detail-value">Rp {{ number_format($value->biaya_jarak, 0, ',', '.') }}</span>
+</div>
+@endif
+
+{{-- Biaya Material --}}
+@if(count($pemesananbahan) > 0 && $totalkeranjang > 0)
+<div class="detail-row">
+    <span class="detail-label">Biaya Bahan Material</span>
+    <span class="detail-value">Rp {{ number_format($totalkeranjang, 0, ',', '.') }}</span>
+</div>
+@endif
+
+{{-- ... bagian lainnya ... --}}
+
+{{-- Total Section --}}
+<div class="total-section">
+    <div class="total-label">Total Pembayaran</div>
+    <div class="total-value">
+        @php
+            // Biaya pengantaran hanya jika ada bahan material
+            $biayaPengantaran = 0;
+            if(count($pemesananbahan) > 0) {
+                $biayaPengantaran = $value->biaya_jarak ?? 0;
+            }
+        @endphp
+        Rp {{ number_format($value->biayajasa + $biayaPengantaran + $totalkeranjang, 0, ',', '.') }}
+    </div>
+</div>
+@endif
                 @if($value->catatan)
                 <div class="detail-row">
                     <span class="detail-label">Catatan</span>
@@ -326,9 +364,11 @@
             </div>
             
             <div class="total-section">
-                <div class="total-label">Total Pembayaran</div>
-                <div class="total-value">Rp {{ number_format($biayajasa + $totalkeranjang + ($jarak * $hargajarak->hargajarak), 0, ',', '.') }}</div>
-            </div>
+    <div class="total-label">Total Pembayaran</div>
+    <div class="total-value">
+        Rp {{ number_format($value->biayajasa + ($value->biaya_jarak ?? 0) + $totalkeranjang, 0, ',', '.') }}
+    </div>
+</div>
         </div>
         
         <div class="invoice-footer">

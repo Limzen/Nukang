@@ -48,11 +48,22 @@ class HomeController extends Controller
 			$tukangData = \App\Tukang::where('id', Auth::user()->id)->first();
 			$id_tukang = $tukangData ? $tukangData->id_tukang : null;
 
+			$isFullyActive = false;
+
+if ($tukangData) {
+    $isFullyActive = (
+        Auth::user()->statusverifikasi == '1' &&
+        $tukangData->statuseditprofil == '1' &&
+        $tukangData->statusjasakeahlian == '1'
+    );
+}
+
+
 			$ps = \App\Pemesanan::where('statuspemesanan', '=', '5')->where('id_tukang', '=', $id_tukang)->count();
 			$pbs = \App\Pemesanan::where('statuspemesanan', '=', '3')->where('id_tukang', '=', $id_tukang)->count();
 			$pendingOrders = \App\Pemesanan::where('id_tukang', '=', $id_tukang)->where('statuspemesanan', '=', '0')->count();
 			$totalEarnings = \App\Pemesanan::where('id_tukang', '=', $id_tukang)->where('statuspemesanan', '=', '5')->sum('biayajasa');
-			return view('dashboards.tukang', compact('ps', 'pbs', 'pendingOrders', 'totalEarnings', 'tukangData'));
+			return view('dashboards.tukang', compact('ps', 'pbs', 'pendingOrders', 'totalEarnings', 'tukangData', 'isFullyActive'));
 		} elseif (Auth::user()->statuspengguna == '0') {
 			// Admin Dashboard
 			$verifikasitukang = \App\User::join('tukang', 'tukang.id', '=', 'users.id')->where('statusverifikasi', '=', '0')->get();

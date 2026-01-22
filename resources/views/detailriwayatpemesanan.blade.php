@@ -1883,20 +1883,50 @@
 			</div>
 
 			{{-- Price Summary --}}
-			<div class="price-card">
-				<div class="price-row">
-					<span class="price-label">Biaya Jasa {{ $value->jenispemesanan }}</span>
-					<span class="price-value">Rp {{ number_format($value->biayajasa, 0, ',', '.') }}</span>
-				</div>
-				@if($value->statuspemesanan != '0' && $value->statuspemesanan != '2' && count($pemesananbahan) > 0)
-					<div class="price-row">
-						<span class="price-label">Biaya Pengantaran ({{ number_format($jarak, 1) }} Km × Rp
-							{{ number_format($hargajarak->hargajarak, 0, ',', '.') }})</span>
-						<span class="price-value">Rp
-							{{ number_format($jarak * $hargajarak->hargajarak, 0, ',', '.') }}</span>
-					</div>
-				@endif
-			</div>
+{{-- Price Summary - GUNAKAN SNAPSHOT DATA --}}
+<div class="price-card">
+    <div class="price-row">
+        <span class="price-label">Biaya Jasa {{ $value->jenispemesanan }}</span>
+        <span class="price-value">Rp {{ number_format($value->biayajasa, 0, ',', '.') }}</span>
+    </div>
+    
+    {{-- ✅ Biaya Pengantaran HANYA jika ada bahan material --}}
+    @if($value->statuspemesanan != '0' && $value->statuspemesanan != '2' && count($pemesananbahan) > 0)
+        @if(isset($value->biaya_jarak) && $value->biaya_jarak > 0)
+            <div class="price-row">
+                <span class="price-label">
+                    Biaya Pengantaran 
+                    ({{ number_format($value->jarak_km, 1) }} Km × Rp {{ number_format($value->harga_per_km, 0, ',', '.') }})
+                </span>
+                <span class="price-value">
+                    Rp {{ number_format($value->biaya_jarak, 0, ',', '.') }}
+                </span>
+            </div>
+        @endif
+    @endif
+    
+    {{-- Biaya Material --}}
+    @if(count($pemesananbahan) > 0 && $totalkeranjang > 0)
+        <div class="price-row">
+            <span class="price-label">Biaya Bahan Material</span>
+            <span class="price-value">Rp {{ number_format($totalkeranjang, 0, ',', '.') }}</span>
+        </div>
+    @endif
+    
+    {{-- Total --}}
+    <div class="price-row total">
+        <span class="price-label">TOTAL</span>
+        <span class="price-value">
+            @php
+                $biayaPengantaran = 0;
+                if($value->statuspemesanan != '0' && $value->statuspemesanan != '2' && count($pemesananbahan) > 0) {
+                    $biayaPengantaran = $value->biaya_jarak ?? 0;
+                }
+            @endphp
+            Rp {{ number_format($value->biayajasa + $biayaPengantaran + $totalkeranjang, 0, ',', '.') }}
+        </span>
+    </div>
+</div>
 
 			{{-- Notes --}}
 			@if($value->catatan)
@@ -1914,44 +1944,6 @@
 				</div>
 			@endif
 		</div>
-
-		{{-- Cost Modification Form (for Tukang) --}}
-		@if(Auth::user()->statuspengguna == '2' && $value->statuspemesanan == '3' && $value->statusubahharga == '0')
-			<div class="detail-card">
-				<div class="detail-card-title">
-					<i class="fas fa-edit"></i>
-					<span>Izinkan Ubah Biaya</span>
-				</div>
-				<form action="{{ url('riwayatpemesanan/' . $value->id_pemesanan . '/izinkan') }}" method="POST">
-					<input type="hidden" name="_token" value="{{ csrf_token() }}">
-					<p style="color: var(--text-secondary); margin-bottom: var(--space-4);">Klik tombol di bawah untuk
-						mengizinkan perubahan biaya jasa.</p>
-					<button type="submit" class="btn-premium btn-premium-primary">
-						<i class="fas fa-check"></i> Izinkan
-					</button>
-				</form>
-			</div>
-		@endif
-
-		{{-- Cost Modification Form (for Pelanggan) --}}
-		@if(Auth::user()->statuspengguna == '1' && $value->statuspemesanan == '3' && $value->statusubahharga == '1')
-			<div class="detail-card">
-				<div class="detail-card-title">
-					<i class="fas fa-coins"></i>
-					<span>Ubah Biaya Jasa</span>
-				</div>
-				<form action="{{ url('riwayatpemesanan/' . $value->id_pemesanan . '/ubahbiaya') }}" method="POST"
-					class="cost-form">
-					<input type="hidden" name="_token" value="{{ csrf_token() }}">
-					<label>Biaya Jasa Baru:</label>
-					<input type="number" min="{{ $value->biayajasa }}" class="form-control" name="biayajasaubah"
-						value="{{ $value->biayajasa }}">
-					<button type="submit" class="btn-premium btn-premium-primary">
-						<i class="fas fa-save"></i> Simpan
-					</button>
-				</form>
-			</div>
-		@endif
 
 		{{-- Material Cart --}}
 		<div class="cart-card">
